@@ -1,0 +1,510 @@
+[
+  {
+    "title": "Robuste-1 Agent Hybride Skill (complet, 4KB)",
+    "status": "completed",
+    "steps_done": 7,
+    "time": 349,
+    "output": 65163,
+    "score": 10,
+    "C": 5,
+    "Co": 3,
+    "Q": 2,
+    "passed": false,
+    "checks_passed": 3,
+    "checks_total": 12,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "completed",
+        "dur": 12,
+        "len": 2687
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "completed",
+        "dur": 24,
+        "len": 4559
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "completed",
+        "dur": 73,
+        "len": 14627
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "completed",
+        "dur": 32,
+        "len": 6261
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "completed",
+        "dur": 84,
+        "len": 14037
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "completed",
+        "dur": 48,
+        "len": 8972
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "completed",
+        "dur": 76,
+        "len": 14020
+      }
+    ]
+  },
+  {
+    "title": "Robuste-2a PROMPT FINAL Bloc 1 (modes, règles, cas limites)",
+    "status": "error",
+    "steps_done": 6,
+    "time": 411,
+    "output": 84387,
+    "score": 15,
+    "C": 1,
+    "Co": 8,
+    "Q": 6,
+    "passed": false,
+    "checks_passed": 10,
+    "checks_total": 12,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "completed",
+        "dur": 83,
+        "len": 14740
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "completed",
+        "dur": 76,
+        "len": 14898
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "completed",
+        "dur": 70,
+        "len": 15110
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "completed",
+        "dur": 52,
+        "len": 12484
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "completed",
+        "dur": 52,
+        "len": 12484
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "completed",
+        "dur": 78,
+        "len": 14574
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "error",
+        "dur": 0,
+        "len": 97
+      }
+    ]
+  },
+  {
+    "title": "Robuste-1 Agent Hybride Skill (4KB)",
+    "status": "completed",
+    "steps_done": 7,
+    "time": 262,
+    "output": 54969,
+    "score": 16,
+    "C": 7,
+    "Co": 5,
+    "Q": 4,
+    "passed": false,
+    "checks_passed": 5,
+    "checks_total": 12,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "completed",
+        "dur": 10,
+        "len": 1630
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "completed",
+        "dur": 23,
+        "len": 4235
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "completed",
+        "dur": 40,
+        "len": 8461
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "completed",
+        "dur": 32,
+        "len": 6003
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "completed",
+        "dur": 67,
+        "len": 13205
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "completed",
+        "dur": 27,
+        "len": 6220
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "completed",
+        "dur": 63,
+        "len": 15215
+      }
+    ]
+  },
+  {
+    "title": "Robuste-2a PROMPT FINAL Bloc 1 (19KB)",
+    "status": "error",
+    "steps_done": 4,
+    "time": 88,
+    "output": 20829,
+    "score": null,
+    "checks_passed": 0,
+    "checks_total": 0,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "completed",
+        "dur": 10,
+        "len": 2237
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "completed",
+        "dur": 19,
+        "len": 4388
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "completed",
+        "dur": 30,
+        "len": 7389
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "completed",
+        "dur": 29,
+        "len": 6718
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "error",
+        "dur": 0,
+        "len": 97
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      }
+    ]
+  },
+  {
+    "title": "Robuste-2b PROMPT FINAL Bloc 2 (blocs A-J, scoring, méthodologie)",
+    "status": "error",
+    "steps_done": 0,
+    "time": 0,
+    "output": 97,
+    "score": null,
+    "checks_passed": 0,
+    "checks_total": 0,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "error",
+        "dur": 0,
+        "len": 97
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      }
+    ]
+  },
+  {
+    "title": "Robuste-2b PROMPT FINAL Bloc 2 (15KB)",
+    "status": "error",
+    "steps_done": 0,
+    "time": 0,
+    "output": 97,
+    "score": null,
+    "checks_passed": 0,
+    "checks_total": 0,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "error",
+        "dur": 0,
+        "len": 97
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "skipped",
+        "dur": 0,
+        "len": 0
+      }
+    ]
+  },
+  {
+    "title": "Robuste-3a KNOWLEDGE Bloc 1 (26KB)",
+    "status": "completed",
+    "steps_done": 7,
+    "time": 301,
+    "output": 79800,
+    "score": 24,
+    "C": 10,
+    "Co": 8,
+    "Q": 6,
+    "passed": true,
+    "checks_passed": 10,
+    "checks_total": 12,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "completed",
+        "dur": 46,
+        "len": 14388
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "completed",
+        "dur": 32,
+        "len": 5928
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "completed",
+        "dur": 39,
+        "len": 10066
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "completed",
+        "dur": 55,
+        "len": 14363
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "completed",
+        "dur": 53,
+        "len": 14365
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "completed",
+        "dur": 23,
+        "len": 6325
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "completed",
+        "dur": 53,
+        "len": 14365
+      }
+    ]
+  },
+  {
+    "title": "Robuste-3b KNOWLEDGE Bloc 2 (23KB)",
+    "status": "completed",
+    "steps_done": 7,
+    "time": 238,
+    "output": 65573,
+    "score": 15,
+    "C": 6,
+    "Co": 5,
+    "Q": 4,
+    "passed": false,
+    "checks_passed": 5,
+    "checks_total": 12,
+    "step_details": [
+      {
+        "n": 1,
+        "name": "COMPRÉHENSION",
+        "status": "completed",
+        "dur": 11,
+        "len": 2313
+      },
+      {
+        "n": 2,
+        "name": "DÉCOMPOSITION",
+        "status": "completed",
+        "dur": 20,
+        "len": 4589
+      },
+      {
+        "n": 3,
+        "name": "EXTRACTION",
+        "status": "completed",
+        "dur": 32,
+        "len": 9131
+      },
+      {
+        "n": 4,
+        "name": "STRUCTURATION",
+        "status": "completed",
+        "dur": 17,
+        "len": 5417
+      },
+      {
+        "n": 5,
+        "name": "GÉNÉRATION",
+        "status": "completed",
+        "dur": 50,
+        "len": 14709
+      },
+      {
+        "n": 6,
+        "name": "VALIDATION",
+        "status": "completed",
+        "dur": 48,
+        "len": 14706
+      },
+      {
+        "n": 7,
+        "name": "AMÉLIORATION",
+        "status": "completed",
+        "dur": 60,
+        "len": 14708
+      }
+    ]
+  }
+]

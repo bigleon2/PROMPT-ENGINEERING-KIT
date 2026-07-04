@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 794px; height: 1123px; overflow: hidden; }
+  body { font-family: 'Inter', sans-serif; background: #faf8f6; position: relative; }
+
+  .bg { position: absolute; inset: 0; background: #faf8f6; z-index: 0; }
+  .cover-layer-1 { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
+
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(180, 120, 50, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(180, 120, 50, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .deco-block-tr {
+    position: absolute; top: -60px; right: -60px; width: 300px; height: 300px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.04));
+    border-radius: 50%;
+  }
+  .deco-block-bl {
+    position: absolute; bottom: -40px; left: -40px; width: 200px; height: 200px;
+    background: linear-gradient(315deg, rgba(245, 158, 11, 0.06), rgba(217, 119, 6, 0.02));
+    border-radius: 50%;
+  }
+
+  .cover-layer-2 { position: absolute; inset: 0; z-index: 2; }
+
+  .anchor-line {
+    position: absolute; left: 40px; top: 100px; bottom: 100px;
+    width: 5px;
+    background: linear-gradient(180deg, #F59E0B, #D97706);
+    border-radius: 3px;
+  }
+  .accent-hline {
+    position: absolute; left: 100px; top: 270px; width: 80px; height: 2px;
+    background: #D97706; opacity: 0.6;
+  }
+
+  .cover-layer-3 { position: absolute; inset: 0; z-index: 3; }
+
+  .kicker {
+    position: absolute; left: 100px; top: 150px; max-width: 600px;
+    font-size: 13px; font-weight: 500; letter-spacing: 3px;
+    color: #D97706; text-transform: uppercase; opacity: 0.85;
+  }
+  .title-line-1 {
+    position: absolute; left: 100px; top: 350px; max-width: 620px;
+    font-family: 'Playfair Display', serif;
+    font-size: 46px; font-weight: 900; line-height: 1.2; color: #D97706;
+  }
+  .title-line-2 {
+    position: absolute; left: 100px; top: 530px; max-width: 620px;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700; line-height: 1.2; color: #1a1817;
+  }
+
+  .summary {
+    position: absolute; left: 100px; top: 620px; max-width: 540px;
+    font-size: 14px; font-weight: 400; line-height: 1.7; color: #685949; opacity: 0.85;
+  }
+  .meta {
+    position: absolute; left: 100px; bottom: 150px; max-width: 500px;
+    font-size: 13px; font-weight: 400; color: #807b76; line-height: 1.5;
+  }
+  .meta .tag {
+    display: inline-block; background: rgba(245, 158, 11, 0.1);
+    color: #94591e; padding: 3px 10px; border-radius: 3px;
+    font-size: 11px; font-weight: 500; margin-right: 6px; margin-top: 4px;
+  }
+  .footer {
+    position: absolute; left: 100px; bottom: 25px;
+    font-size: 11px; font-weight: 400; letter-spacing: 2px;
+    color: #b0a89f; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="cover-layer-1">
+    <div class="grid"></div>
+    <div class="deco-block-tr"></div>
+    <div class="deco-block-bl"></div>
+  </div>
+  <div class="cover-layer-2">
+    <div class="anchor-line"></div>
+    <div class="accent-hline"></div>
+  </div>
+  <div class="cover-layer-3">
+    <div class="kicker">SPECIFICATION TECHNIQUE</div>
+    <div class="title-line-1">Meta-Prompt-Maitre</div>
+    <div class="title-line-2">Prompt-Engineering-Kit v4.0</div>
+    <div class="summary">
+      Document de reference canonique pour la regeneration, le maintien, l'extension et le diagnostic de l'application PEK v4.0. Ce document capture l'integralite de la specification fonctionnelle, technique, architecturale et methodologique.
+    </div>
+    <div class="meta">
+      <span class="tag">Super-Agent</span>
+      <span class="tag">Hybride CoT</span>
+      <span class="tag">Chaining</span>
+      <span class="tag">Full-Stack</span>
+    </div>
+    <div class="footer">Document de reference &mdash; v4.0</div>
+  </div>
+</body>
+</html>

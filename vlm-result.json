@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "The screenshot displays a **minimalist design** centered on a plain white background. At the center of the image is a small, square logo. The logo features a dark gray (or black) square with rounded corners, and inside it, a stylized light gray (or white) letter \"Z\" is positioned. The overall aesthetic is clean and simple, with no additional elements, text, or decorations present. The logo appears to be the focal point, likely representing a brand or application identifier.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1782969153,
+  "id": "202607021312264fd2884f404147ba",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607021312264fd2884f404147ba",
+  "usage": {
+    "completion_tokens": 101,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1349,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 1450
+  }
+}
