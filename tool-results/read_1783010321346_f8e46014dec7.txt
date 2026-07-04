@@ -1,0 +1,1229 @@
+     1→# Méta-Prompt-Maître — Prompt-Engineering-Kit v4.0
+     2→
+     3→> **Document de référence canonique** pour la régénération, le maintien, l'extension et le diagnostic de l'application Prompt-Engineering-Kit v4.0 (PEK v4.0).
+     4→> Ce méta-prompt capture l'intégralité de la spécification fonctionnelle, technique, architecturale et méthodologique de l'application.
+     5→
+     6→---
+     7→
+     8→## Table des matières
+     9→
+    10→1. [Identité & Philosophie](#1-identite--philosophie)
+    11→2. [Architecture Système](#2-architecture-systeme)
+    12→3. [Modèle de Données (Prisma)](#3-modele-de-donnees-prisma)
+    13→4. [État Client (Zustand Store)](#4-etat-client-zustand-store)
+    14→5. [Pipeline Chain-of-Thought — Spécification Complète](#5-pipeline-chain-of-thought--specification-complete)
+    15→6. [Blocs Modulaires A-J](#6-blocs-modulaires-a-j)
+    16→7. [API REST — Endpoints](#7-api-rest--endpoints)
+    17→8. [Composants UI — Spécification Détaillée](#8-composants-ui--specification-detaillee)
+    18→9. [Système de Validation & Scoring](#9-systeme-de-validation--scoring)
+    19→10. [Templates & Modèles Réutilisables](#10-templates--modeles-reutilisables)
+    20→11. [Design System & Contraintes Visuelles](#11-design-system--contraintes-visuelles)
+    21→12. [Flux de Données End-to-End](#12-flux-de-donnees-end-to-end)
+    22→13. [Règles d'Implémentation Inviolables](#13-regles-dimplementation-inviolables)
+    23→14. [Glossaire Technique](#14-glossaire-technique)
+    24→15. [Matrice de Diagnostic](#15-matrice-de-diagnostic)
+    25→
+    26→---
+    27→
+    28→## 1. Identité & Philosophie
+    29→
+    30→### 1.1 Définition
+    31→
+    32→**Prompt-Engineering-Kit v4.0 (PEK v4.0)** est une application full-stack de génération automatisée de kits de prompt engineering. Elle transforme tout projet IA en un kit structuré, réutilisable et validé, via une méthodologie **SUPER-AGENT HYBRIDE CoT + CHAINING**.
+    33→
+    34→### 1.2 Principe Fondamental
+    35→
+    36→L'application ne génère pas un simple prompt — elle **décompose un projet source en blocs modulaires normalisés (A-J)**, les traite séquentiellement via un **pipeline Chain-of-Thought à 7 étapes**, et produit un **kit complet, scoré et exportable**.
+    37→
+    38→### 1.3 Méthodologie : SUPER-AGENT HYBRIDE CoT + CHAINING
+    39→
+    40→- **CoT (Chain-of-Thought)** : Chaque étape du pipeline raisonne logiquement sur la précédente. Les sorties s'accumulent et se nourrissent mutuellement.
+    41→- **Chaining** : Les 7 étapes s'exécutent de manière **strictement séquentielle**. L'étape N+1 reçoit toujours les sorties des étapes 1 à N.
+    42→- **Hybride** : Combine le raisonnement LLM (génération de contenu) avec des mécanismes déterministes (validation par règles, scoring algorithmique).
+    43→- **Super-Agent** : Le système agit comme un architecte expert autonome qui orchestre l'ensemble du processus.
+    44→
+    45→### 1.4 Langue
+    46→
+    47→L'application est **en français** par défaut (`lang="fr"` sur `<html>`). Les contenus générés sont en français sauf configuration contraire (champ `language: "en"`).
+    48→
+    49→---
+    50→
+    51→## 2. Architecture Système
+    52→
+    53→### 2.1 Stack Technique
+    54→
+    55→| Couche | Technologie | Version / Notes |
+    56→|--------|-------------|-----------------|
+    57→| Framework | Next.js 16 (App Router) | TypeScript 5 strict |
+    58→| Styling | Tailwind CSS 4 | Variables CSS intégrées |
+    59→| UI Components | shadcn/ui (New York style) | Lucide icons |
+    60→| State Management | Zustand | Store centralisé (`src/lib/store.ts`) |
+    61→| ORM | Prisma | SQLite (client only) |
+    62→| LLM Backend | z-ai-web-dev-sdk | `ZAI.create()` → `zai.chat.completions.create()` |
+    63→| Animations | Framer Motion | Transitions de page et micro-interactions |
+    64→| Forms | react-hook-form + zod/v4 | Validation côté client |
+    65→| Theme | next-themes | Light/Dark, default dark |
+    66→| Markdown | react-markdown | Rendu des sorties d'étapes |
+    67→| Notifications | Sonner (Toaster) | Toasts de feedback |
+    68→| Dates | date-fns | Formatage FR |
+    69→
+    70→### 2.2 Structure des Fichiers
+    71→
+    72→```
+    73→src/
+    74→├── app/
+    75→│   ├── layout.tsx              # Root layout : ThemeProvider, Toaster, fonts Geist
+    76→│   ├── page.tsx                # SPA unique : routing par onglets (tabs)
+    77→│   ├── globals.css             # Styles globaux Tailwind + custom scrollbar
+    78→│   └── api/
+    79→│       ├── sessions/
+    80→│       │   ├── route.ts                    # GET (liste), POST (création + 7 steps)
+    81→│       │   └── [id]/
+    82→│       │       ├── route.ts                # GET (détail), DELETE
+    83→│       │       ├── execute/route.ts        # POST : Pipeline CoT complet (7 appels LLM)
+    84→│       │       └── steps/[stepNumber]/
+    85→│       │           └── route.ts            # GET (polling), PATCH (mise à jour)
+    86→│       ├── templates/
+    87→│       │   ├── route.ts                    # GET (liste), POST (création)
+    88→│       │   └── [id]/route.ts               # GET, DELETE
+    89→│       ├── validate/route.ts               # POST : validation algorithmique
+    90→│       └── export/route.ts                 # POST : export Markdown
+    91→├── components/
+    92→│   ├── pek-header.tsx          # Navigation sticky + dark mode toggle + mobile sheet
+    93→│   ├── pek-footer.tsx          # Footer sticky avec branding
+    94→│   ├── pek-session-form.tsx    # Formulaire de création + lancement pipeline + polling
+    95→│   ├── pek-cot-pipeline.tsx    # Stepper visuel 7 étapes (horizontal desktop, vertical mobile)
+    96→│   ├── pek-step-output.tsx     # Rendu Markdown d'une étape + copie
+    97→│   ├── pek-sessions-list.tsx   # Historique des sessions + voir/supprimer
+    98→│   ├── pek-templates-gallery.tsx # Galerie de templates + création custom
+    99→│   ├── pek-guide.tsx           # Guide interactif (accordeons méthodologie + blocs)
+   100→│   ├── pek-validation-report.tsx # Rapport de validation avec score circulaire
+   101→│   ├── theme-provider.tsx      # Wrapper next-themes
+   102→│   └── ui/                     # Composants shadcn/ui standards
+   103→└── lib/
+   104→    ├── store.ts                # Zustand store (types, constantes, actions)
+   105→    ├── db.ts                   # Prisma client singleton
+   106→    └── utils.ts                # Utilitaire cn() pour className merging
+   107→```
+   108→
+   109→### 2.3 Schéma Routage UI
+   110→
+   111→L'application est une **Single Page Application** avec un seul route visible (`/`). La navigation se fait via un système d'onglets géré par le Zustand store :
+   112→
+   113→| Clé `activeTab` | Composant | Description |
+   114→|-----------------|-----------|-------------|
+   115→| `"session"` | `PekSessionForm` + pipeline | Nouvelle session + formulaire + pipeline + output + validation |
+   116→| `"sessions"` | `PekSessionsList` | Historique des sessions passées |
+   117→| `"templates"` | `PekTemplatesGallery` | Galerie de modèles réutilisables |
+   118→| `"guide"` | `PekGuide` | Guide méthodologique interactif |
+   119→
+   120→### 2.4 Topologie Réseau
+   121→
+   122→- Port unique exposé : **3000** (dev server Next.js)
+   123→- Gateway Caddy pour le routage inter-services
+   124→- Les requêtes vers des mini-services passent par `?XTransformPort=XXXX` (query parameter)
+   125→- LLM calls via `z-ai-web-dev-sdk` côté serveur uniquement (jamais côté client)
+   126→
+   127→---
+   128→
+   129→## 3. Modèle de Données (Prisma)
+   130→
+   131→### 3.1 Schéma Complet
+   132→
+   133→```prisma
+   134→datasource db {
+   135→  provider = "sqlite"
+   136→  url      = env("DATABASE_URL")
+   137→}
+   138→
+   139→model Project {
+   140→  id          String   @id @default(cuid())
+   141→  name        String
+   142→  description String?
+   143→  projectType String   @default("web")
+   144→  status      String   @default("draft")
+   145→  createdAt   DateTime @default(now())
+   146→  updatedAt   DateTime @updatedAt
+   147→  sessions    Session[]
+   148→}
+   149→
+   150→model Session {
+   151→  id              String   @id @default(cuid())
+   152→  title           String
+   153→  projectId       String
+   154→  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+   155→  currentStep     Int      @default(1)
+   156→  status          String   @default("in_progress")   // in_progress | completed | error
+   157→  context         String   @default("")              // Description du contexte
+   158→  sourceMaterial  String   @default("")              // Contenu source du projet
+   159→  results         String   @default("")              // Résultats attendus
+   160→  constraints     String   @default("")              // Contraintes additionnelles
+   161→  iterations      String   @default("")
+   162→  environment     String   @default("")
+   163→  inputUrl        String?
+   164→  inputFormat     String   @default("markdown")      // markdown | json | yaml | code | url | pdf
+   165→  selectedBlocks  String   @default("A,C,E,G,H")     // Liste séparée par virgules
+   166→  complexity      String   @default("moyen")          // simple | moyen | complexe
+   167→  language        String   @default("fr")             // fr | en
+   168→  createdAt       DateTime @default(now())
+   169→  updatedAt       DateTime @updatedAt
+   170→  steps           Step[]
+   171→  validations     Validation[]
+   172→}
+   173→
+   174→model Step {
+   175→  id          String   @id @default(cuid())
+   176→  sessionId   String
+   177→  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+   178→  stepNumber  Int                                    // 1-7
+   179→  name        String                                 // Nom étape (COMPRÉHENSION, DÉCOMPOSITION, etc.)
+   180→  status      String   @default("pending")           // pending | running | completed | error | skipped
+   181→  output      String   @default("")                  // Sortie Markdown de l'étape
+   182→  duration    Int      @default(0)                   // Durée en secondes
+   183→  createdAt   DateTime @default(now())
+   184→  updatedAt   DateTime @updatedAt
+   185→}
+   186→
+   187→model Validation {
+   188→  id            String   @id @default(cuid())
+   189→  sessionId     String
+   190→  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+   191→  completeness  Int      @default(0)   // 0-10
+   192→  coherence     Int      @default(0)   // 0-8
+   193→  quality       Int      @default(0)   // 0-7
+   194→  totalScore    Int      @default(0)   // 0-25
+   195→  maxScore      Int      @default(25)
+   196→  checks        String   @default("[]") // JSON : Array<{label: string; passed: boolean}>
+   197→  passed        Boolean  @default(false)
+   198→  createdAt     DateTime @default(now())
+   199→  updatedAt     DateTime @updatedAt
+   200→}
+   201→
+   202→model Template {
+   203→  id          String   @id @default(cuid())
+   204→  name        String
+   205→  description String
+   206→  systemPrompt String
+   207→  blocks      String   @default("A,C,E,G,H")  // Liste séparée par virgules
+   208→  isDefault   Boolean  @default(false)
+   209→  createdAt   DateTime @default(now())
+   210→  updatedAt   DateTime @updatedAt
+   211→}
+   212→```
+   213→
+   214→### 3.2 Relations Clés
+   215→
+   216→- **Project 1→N Session** : Un projet contient plusieurs sessions. Suppression en cascade.
+   217→- **Session 1→N Step** : Chaque session a exactement 7 étapes (créées à l'initialisation).
+   218→- **Session 1→N Validation** : Chaque session peut avoir plusieurs validations (historique).
+   219→- **Step appartient à Session** : Cascade delete.
+   220→
+   221→---
+   222→
+   223→## 4. État Client (Zustand Store)
+   224→
+   225→### 4.1 Types Exportés
+   226→
+   227→```typescript
+   228→type BlockId = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J";
+   229→
+   230→interface Project {
+   231→  id: string; name: string; description: string;
+   232→  createdAt: string; updatedAt: string;
+   233→}
+   234→
+   235→interface Session {
+   236→  id: string; projectId: string; title: string;
+   237→  status: "pending" | "running" | "completed" | "error";
+   238→  complexity: "simple" | "moyen" | "complexe";
+   239→  score: number | null;
+   240→  createdAt: string; completedAt: string | null;
+   241→}
+   242→
+   243→interface Step {
+   244→  id: number; name: string; description: string;
+   245→  status: "pending" | "active" | "done" | "error";
+   246→  duration: number | null;
+   247→}
+   248→
+   249→interface BlockConfig {
+   250→  id: BlockId; name: string; description: string;
+   251→  required: boolean; recommended: boolean;
+   252→}
+   253→
+   254→interface Template {
+   255→  id: string; name: string; description: string;
+   256→  blocks: BlockId[]; systemPrompt: string; icon: string;
+   257→}
+   258→```
+   259→
+   260→### 4.2 État Global
+   261→
+   262→```typescript
+   263→{
+   264→  // Navigation
+   265→  activeTab: string;              // "session" | "sessions" | "templates" | "guide"
+   266→  sidebarOpen: boolean;
+   267→
+   268→  // Données
+   269→  projects: Project[];
+   270→  sessions: Session[];
+   271→  currentSessionId: string | null;
+   272→
+   273→  // Pipeline
+   274→  steps: Step[];                  // 7 étapes (DEFAULT_STEPS)
+   275→  currentStep: number;            // Index 0-6
+   276→  stepOutputs: Record<number, string>; // index → contenu Markdown
+   277→  isGenerating: boolean;
+   278→
+   279→  // Configuration
+   280→  selectedBlocks: BlockId[];
+   281→  showTemplateDialog: boolean;
+   282→
+   283→  // Validation
+   284→  validationScore: number | null;           // 0-25
+   285→  validationDetails: {
+   286→    completeness: number;   // 0-10
+   287→    coherence: number;      // 0-8
+   288→    quality: number;        // 0-7
+   289→    checks: { label: string; passed: boolean }[];
+   290→  } | null;
+   291→}
+   292→```
+   293→
+   294→### 4.3 Actions Principales
+   295→
+   296→| Action | Description |
+   297→|--------|-------------|
+   298→| `setActiveTab(tab)` | Change l'onglet actif |
+   299→| `resetPipeline()` | Réinitialise steps, stepOutputs, currentStep, isGenerating, validation, currentSessionId |
+   300→| `setSteps(steps)` | Met à jour le tableau des 7 étapes |
+   301→| `setStepOutput(index, output)` | Enregistre la sortie Markdown d'une étape |
+   302→| `setCurrentStep(index)` | Change l'étape actuellement visualisée |
+   303→| `setIsGenerating(bool)` | Active/désactive l'état de génération |
+   304→| `toggleBlock(block)` | Ajoute/retire un bloc (les blocs `required` ne peuvent pas être retirés) |
+   305→| `setValidationScore(score)` | Enregistre le score total |
+   306→| `setValidationDetails(details)` | Enregistre le détail de validation |
+   307→| `setSessions(sessions)` | Met à jour la liste des sessions |
+   308→| `setCurrentSessionId(id)` | Enregistre l'ID de la session courante |
+   309→
+   310→### 4.4 Constantes Exportées
+   311→
+   312→**`DEFAULT_STEPS`** : Les 7 étapes par défaut du pipeline CoT.
+   313→
+   314→**`BLOCK_CONFIGS`** : Configuration des 10 blocs A-J avec nom, description, required/recommended.
+   315→
+   316→**`DEFAULT_TEMPLATES`** : 5 templates prédéfinis (Web App, Agent IA, Pipeline Data, Recherche, Formation).
+   317→
+   318→---
+   319→
+   320→## 5. Pipeline Chain-of-Thought — Spécification Complète
+   321→
+   322→### 5.1 Vue d'Ensemble
+   323→
+   324→Le pipeline est le cœur de l'application. Il transforme une session (projet + configuration) en un kit structuré via 7 appels LLM séquentiels avec accumulation de contexte.
+   325→
+   326→```
+   327→[Session Input] → Étape 1 → Étape 2 → ... → Étape 7 → [Kit Final + Score]
+   328→                      ↑                    ↑
+   329→                      └── Chaining : chaque étape reçoit les sorties des précédentes
+   330→```
+   331→
+   332→### 5.2 Détail de Chaque Étape
+   333→
+   334→#### Étape 1 — COMPRÉHENSION
+   335→
+   336→**Objectif** : Analyse en profondeur du projet fourni.
+   337→
+   338→**Sorties attendues** :
+   339→- Objectif principal du projet IA
+   340→- Domaine d'application
+   341→- Technologies et frameworks utilisés
+   342→- Acteurs impliqués
+   343→- Niveau de complexité global
+   344→- Points clés à préserver
+   345→
+   346→**Format** : Analyse structurée avec sections claires.
+   347→
+   348→---
+   349→
+   350→#### Étape 2 — DÉCOMPOSITION
+   351→
+   352→**Objectif** : Découpage du projet en composants réutilisables.
+   353→
+   354→**Sorties attendues** :
+   355→- Responsabilité principale de chaque composant
+   356→- Entrées/sorties définies
+   357→- Dépendances inter-composants
+   358→- Évaluation de réutilisabilité
+   359→- Priorité de conversion en bloc prompt
+   360→
+   361→**Format** : Liste structurée des composants avec caractéristiques.
+   362→
+   363→---
+   364→
+   365→#### Étape 3 — EXTRACTION
+   366→
+   367→**Objectif** : Extraction des patterns récurrents et éléments réutilisables.
+   368→
+   369→**Sorties attendues** :
+   370→- Patterns de conception identifiés
+   371→- Structures de données communes
+   372→- Workflows récurrents
+   373→- Contraintes techniques récurrentes
+   374→- Bonnes pratiques observées
+   375→- Exemples concrets dans **4+ domaines différents**
+   376→
+   377→**Format** : Catalogue des patterns avec exemples concrets.
+   378→
+   379→---
+   380→
+   381→#### Étape 4 — STRUCTURATION
+   382→
+   383→**Objectif** : Organisation des éléments extraits en structure PEK cohérente.
+   384→
+   385→**Sorties attendues** :
+   386→- Mapping de chaque élément aux blocs A-J
+   387→- Relations entre blocs
+   388→- Ordre recommandé d'utilisation
+   389→- Blocs obligatoires vs optionnels
+   390→- Plan d'assemblage du kit
+   391→
+   392→**Format** : Structure hiérarchique avec mappage aux blocs.
+   393→
+   394→---
+   395→
+   396→#### Étape 5 — GÉNÉRATION
+   397→
+   398→**Objectif** : Rédaction du contenu complet pour chaque bloc sélectionné.
+   399→
+   400→**Sorties attendues** :
+   401→- Contenu détaillé et opérationnel par bloc
+   402→- Exemples concrets variés (4+ domaines)
+   403→- Placeholders pour les variables
+   404→- Cas d'erreur et traitements
+   405→- Rédaction dans la langue configurée
+   406→
+   407→**Format** : Contenu complet de chaque bloc en Markdown structuré.
+   408→
+   409→---
+   410→
+   411→#### Étape 6 — VALIDATION
+   412→
+   413→**Objectif** : Évaluation qualité et complétude du kit généré.
+   414→
+   415→**Critères évalués** :
+   416→- **Complétude** (10 pts) : Tous les blocs sélectionnés présents et complets ?
+   417→- **Cohérence** (8 pts) : Références entre blocs correctes ?
+   418→- **Qualité** (7 pts) : Exemples pertinents et variés (4+ domaines) ?
+   419→
+   420→**Sorties attendues** :
+   421→- Note par critère avec commentaire justifié
+   422→- Points d'amélioration prioritaires
+   423→
+   424→**Format** : Rapport de validation structuré avec scores.
+   425→
+   426→---
+   427→
+   428→#### Étape 7 — AMÉLIORATION
+   429→
+   430→**Objectif** : Corrections et optimisations finales basées sur la validation.
+   431→
+   432→**Actions** :
+   433→- Correction des incohérences détectées
+   434→- Enrichissement des exemples (objectif 4+ domaines)
+   435→- Optimisation des formulations
+   436→- Ajout des éléments manquants
+   437→- Production du kit final versionné
+   438→
+   439→**Format** : Kit PEK final complet en Markdown, prêt à l'emploi, avec numéro de version.
+   440→
+   441→---
+   442→
+   443→### 5.3 System Prompt du Pipeline
+   444→
+   445→```
+   446→Tu es un Architecte en Prompt Engineering spécialisé en conversion de projets IA
+   447→en kits structurés réutilisables.
+   448→
+   449→Méthodologie: Chain-of-Thought en 7 étapes
+   450→- Étape 1: COMPRÉHENSION — Analyse approfondie du projet
+   451→- Étape 2: DÉCOMPOSITION — Découpage en composants
+   452→- Étape 3: EXTRACTION — Identification des patterns réutilisables
+   453→- Étape 4: STRUCTURATION — Organisation en blocs PEK
+   454→- Étape 5: GÉNÉRATION — Rédaction du contenu des blocs
+   455→- Étape 6: VALIDATION — Évaluation qualité et complétude
+   456→- Étape 7: AMÉLIORATION — Corrections et optimisations finales
+   457→
+   458→Contraintes:
+   459→1. Préservation de l'original — Ne jamais altérer le sens du projet source
+   460→2. Complétude des fichiers — Chaque bloc sélectionné doit être exhaustif
+   461→3. Cohérence des références — Les cross-références entre blocs doivent être exactes
+   462→4. Respect des schemas — Suivre les formats définis pour chaque bloc
+   463→5. Application du Chain-of-Thought — Raisonnement étape par étape, logique et traçable
+   464→6. Qualité des exemples (4+ domaines) — Varier les domaines d'application
+   465→7. Automatisation et versionnage — Prévoir l'intégration en pipeline CI/CD
+   466→8. Pas de greenwashing — Pas de fausses promesses, rester factuel et mesurable
+   467→9. Intégration du feedback — Prévoir des mécanismes de retour et d'itération
+   468→```
+   469→
+   470→### 5.4 Construction du Message Utilisateur
+   471→
+   472→Pour chaque étape N, le message utilisateur est construit ainsi :
+   473→
+   474→```
+   475→## Contexte de la session
+   476→{session.context}
+   477→
+   478→## Matériel source
+   479→{session.sourceMaterial}
+   480→
+   481→## Résultats attendus
+   482→{session.results}
+   483→
+   484→## Contraintes additionnelles
+   485→{session.constraints}
+   486→
+   487→## Résultats des étapes précédentes
+   488→
+   489→### Étape 1 — COMPRÉHENSION
+   490→{output_étape_1}
+   491→
+   492→### Étape 2 — DÉCOMPOSITION
+   493→{output_étape_2}
+   494→
+   495→...
+   496→
+   497→---
+   498→
+   499→{instruction_de_l_étape_courante}
+   500→```
+   501→
+   502→### 5.5 Appel LLM
+   503→
+   504→```typescript
+   505→const zai = await ZAI.create();
+   506→const completion = await zai.chat.completions.create({
+   507→  messages: [
+   508→    { role: 'assistant', content: systemPrompt },
+   509→    { role: 'user', content: userMessage },
+   510→  ],
+   511→  thinking: { type: 'disabled' },
+   512→});
+   513→```
+   514→
+   515→> **Note critique** : Le system prompt est passé en tant que `role: 'assistant'` (convention du SDK), et le message utilisateur réel en `role: 'user'`.
+   516→
+   517→### 5.6 Gestion des Erreurs dans le Pipeline
+   518→
+   519→- Si une étape échoue : les étapes restantes sont marquées `skipped`, la session passe en `status: 'error'`.
+   520→- La réponse contient les steps réussis + l'erreur.
+   521→- Le client (polling) détecte le statut `error` et arrête le polling.
+   522→
+   523→---
+   524→
+   525→## 6. Blocs Modulaires A-J
+   526→
+   527→### 6.1 Tableau de Référence
+   528→
+   529→| ID | Nom | Obligatoire | Recommandé | Description |
+   530→|----|-----|:-----------:|:----------:|-------------|
+   531→| A | Résumé Exécutif | ✅ | | Vue d'ensemble du kit : objectifs, périmètre, points clés |
+   532→| B | Architecture & Composants | | | Architecture technique, composants, interactions, dépendances |
+   533→| C | Prompt / Instructions | | | Prompts principaux et instructions détaillées avec exemples |
+   534→| D | Données & Schemas | | | Structures de données, schémas de validation, formats |
+   535→| E | Contraintes & Règles | | | Règles métier, contraintes techniques, limites, garde-fous |
+   536→| F | Résultats & Outputs | | | Formats de sortie attendus, exemples concrets, cas d'utilisation |
+   537→| G | Guide d'Utilisation | | ✅ | Instructions pas-à-pas, workflows typiques, bonnes pratiques |
+   538→| H | Recommandations | ✅ | | Bonnes pratiques, optimisations, conseils d'expert, pièges |
+   539→| I | Tests & Validation | | | Cas de test, critères de validation, scénarios d'erreur |
+   540→| J | Glossaire & Références | | | Termes techniques, acronymes, sources externes |
+   541→
+   542→### 6.2 Règles de Sélection
+   543→
+   544→- Minimum **2 blocs** requis pour lancer une session.
+   545→- Les blocs **A (Résumé Exécutif)** et **H (Recommandations)** sont **obligatoires** — ils ne peuvent pas être désélectionnés dans le formulaire.
+   546→- Le bloc **G (Guide d'Utilisation)** est **recommandé** mais facultatif.
+   547→- Les blocs sélectionnés sont stockés comme chaîne séparée par virgules (ex: `"A,C,E,G,H"`).
+   548→
+   549→---
+   550→
+   551→## 7. API REST — Endpoints
+   552→
+   553→### 7.1 Sessions
+   554→
+   555→#### `GET /api/sessions`
+   556→
+   557→**Description** : Liste toutes les sessions avec leurs steps et validations.
+   558→
+   559→**Réponse** :
+   560→```json
+   561→{
+   562→  "success": true,
+   563→  "data": [
+   564→    {
+   565→      "id": "cuid...",
+   566→      "title": "Kit Agent de Support Client",
+   567→      "status": "completed",
+   568→      "steps": [...],
+   569→      "validations": [{ "totalScore": 22, ... }],
+   570→      "createdAt": "2025-01-15T10:30:00.000Z"
+   571→    }
+   572→  ]
+   573→}
+   574→```
+   575→
+   576→#### `POST /api/sessions`
+   577→
+   578→**Description** : Crée une nouvelle session avec 7 étapes par défaut (status: pending).
+   579→
+   580→**Corps** :
+   581→```json
+   582→{
+   583→  "title": "string (requis, min 3 car.)",
+   584→  "context": "string (description)",
+   585→  "sourceMaterial": "string (contenu source)",
+   586→  "results": "string (résultats attendus)",
+   587→  "constraints": "string (contraintes)",
+   588→  "inputFormat": "markdown | json | yaml | code | url | pdf",
+   589→  "selectedBlocks": "A,C,E,G,H",
+   590→  "complexity": "simple | moyen | complexe",
+   591→  "language": "fr | en"
+   592→}
+   593→```
+   594→
+   595→**Comportement** : Si aucun `projectId` n'est fourni, un projet par défaut est créé automatiquement.
+   596→
+   597→**Réponse** : `{ success: true, data: { id, title, steps: [...7 steps], ... }, status: 201 }`
+   598→
+   599→#### `GET /api/sessions/[id]`
+   600→
+   601→**Description** : Récupère une session avec ses steps et validations.
+   602→
+   603→#### `DELETE /api/sessions/[id]`
+   604→
+   605→**Description** : Supprime une session en cascade (steps + validations).
+   606→
+   607→#### `POST /api/sessions/[id]/execute`
+   608→
+   609→**Description** : **ENDPOINT CRITIQUE** — Exécute le pipeline CoT complet (7 appels LLM séquentiels).
+   610→
+   611→**Comportement** :
+   612→1. Charge la session avec ses steps
+   613→2. Construit le system prompt PEK
+   614→3. Pour chaque step (1→7) :
+   615→   a. Marque le step comme `running` en DB
+   616→   b. Construit le user message avec contexte + sorties précédentes
+   617→   c. Appelle le LLM via `z-ai-web-dev-sdk`
+   618→   d. Sauvegarde le output et la durée en DB
+   619→   e. Accumule le output pour les étapes suivantes
+   620→4. Après l'étape 6 : calcule et sauvegarde la validation
+   621→5. Marque la session comme `completed`
+   622→
+   623→**Erreurs** : Si une étape échoue, les suivantes sont marquées `skipped`, la session passe en `error`.
+   624→
+   625→#### `GET /api/sessions/[id]/steps/[stepNumber]`
+   626→
+   627→**Description** : Récupère le statut et la sortie d'une étape (utilisé pour le **polling**).
+   628→
+   629→**Paramètres** : `stepNumber` de 1 à 7.
+   630→
+   631→**Réponse** :
+   632→```json
+   633→{
+   634→  "success": true,
+   635→  "data": {
+   636→    "id": "cuid...",
+   637→    "stepNumber": 3,
+   638→    "name": "EXTRACTION",
+   639→    "status": "running",    // pending | running | completed | error | skipped
+   640→    "output": "...",
+   641→    "duration": 12
+   642→  }
+   643→}
+   644→```
+   645→
+   646→#### `PATCH /api/sessions/[id]/steps/[stepNumber]`
+   647→
+   648→**Description** : Mise à jour manuelle du statut/sortie d'une étape.
+   649→
+   650→### 7.2 Templates
+   651→
+   652→#### `GET /api/templates`
+   653→
+   654→**Description** : Liste tous les templates (defaults en premier).
+   655→
+   656→#### `POST /api/templates`
+   657→
+   658→**Description** : Crée un template personnalisé.
+   659→
+   660→**Corps** :
+   661→```json
+   662→{
+   663→  "name": "string (requis)",
+   664→  "description": "string",
+   665→  "systemPrompt": "string (requis)",
+   666→  "blocks": "A,C,E,G,H"
+   667→}
+   668→```
+   669→
+   670→#### `GET /api/templates/[id]` / `DELETE /api/templates/[id]`
+   671→
+   672→**Description** : Récupère / Supprime un template.
+   673→
+   674→### 7.3 Validation
+   675→
+   676→#### `POST /api/validate`
+   677→
+   678→**Description** : Validation algorithmique d'un contenu PEK (sans appel LLM).
+   679→
+   680→**Corps** :
+   681→```json
+   682→{
+   683→  "content": "string (contenu Markdown à valider)",
+   684→  "blocks": ["A", "C", "E", "G", "H"]
+   685→}
+   686→```
+   687→
+   688→**Réponse** :
+   689→```json
+   690→{
+   691→  "success": true,
+   692→  "data": {
+   693→    "completeness": 8,   // 0-10
+   694→    "coherence": 7,      // 0-8
+   695→    "quality": 6,        // 0-7
+   696→    "totalScore": 21,    // 0-25
+   697→    "maxScore": 25,
+   698→    "grade": "B",        // A | B | C | D
+   699→    "checks": [
+   700→      { "label": "Complétude des blocs (4/5)", "passed": true },
+   701→      ...
+   702→    ],
+   703→    "passedCount": 10,
+   704→    "totalChecks": 12,
+   705→    "passed": true
+   706→  }
+   707→}
+   708→```
+   709→
+   710→### 7.4 Export
+   711→
+   712→#### `POST /api/export`
+   713→
+   714→**Description** : Exporte une session complète en Markdown.
+   715→
+   716→**Corps** : `{ "sessionId": "string" }`
+   717→
+   718→**Réponse** :
+   719→```json
+   720→{
+   721→  "success": true,
+   722→  "data": {
+   723→    "sessionId": "...",
+   724→    "title": "Kit Agent de Support Client",
+   725→    "markdown": "# Prompt-Engineering-Kit v4.0 — Kit Agent...",
+   726→    "filename": "Kit_Agent_de_Support_Client_PEK.md"
+   727→  }
+   728→}
+   729→```
+   730→
+   731→### 7.5 Format de Réponse Standardisé
+   732→
+   733→Tous les endpoints retournent :
+   734→- Succès : `{ success: true, data: <payload> }`
+   735→- Erreur : `{ success: false, error: "message lisible" }` avec code HTTP approprié (400, 404, 500)
+   736→
+   737→---
+   738→
+   739→## 8. Composants UI — Spécification Détaillée
+   740→
+   741→### 8.1 `PekHeader`
+   742→
+   743→- **Position** : Sticky en haut (`sticky top-0 z-50`), avec backdrop blur
+   744→- **Contenu** :
+   745→  - Logo (icône `BrainCircuit` dans un carré ambre) + titre "Prompt-Engineering-Kit" + badge "v4.0"
+   746→  - Sous-titre "Super-Agent Hybride CoT + Chaining"
+   747→  - Navigation desktop (4 boutons : Nouvelle Session, Sessions, Modèles, Guide)
+   748→  - Toggle dark/light mode (icônes `Sun`/`Moon`)
+   749→  - Bouton "Nouvelle Session" (ambre, CTA principal)
+   750→  - Menu mobile via `Sheet` (slide-in depuis la droite)
+   751→- **État actif** : Onglet actif highlighted avec `bg-amber-600/10 text-amber-500`
+   752→
+   753→### 8.2 `PekSessionForm`
+   754→
+   755→- **Role** : Composant le plus critique de l'application.
+   756→- **Structure** : 4 cartes (shadcn Card) dans un formulaire react-hook-form :
+   757→  1. **Informations de base** : Titre (Input), Description (Textarea), Contenu source (Textarea, min 120px)
+   758→  2. **Résultats & Contraintes** : Résultats attendus (Textarea), Contraintes (Textarea)
+   759→  3. **Configuration** : Format d'entrée (Select), Complexité (Select), Langue (Select) — grid 3 colonnes
+   760→  4. **Sélection des Blocs** : Checkboxes pour les 10 blocs A-J, badges "Obligatoire"/"Recommandé"
+   761→- **Validation Zod** : title min 3, description min 10, sourceContent min 20
+   762→- **Soumission** :
+   763→  1. Vérifie ≥ 2 blocs sélectionnés
+   764→  2. `resetPipeline()` pour nettoyer l'état
+   765→  3. `POST /api/sessions` → crée la session
+   766→  4. Lance `pollStepStatus()` en arrière-plan (polling toutes les 2s)
+   767→  5. `POST /api/sessions/{id}/execute` → lance le pipeline
+   768→  6. À la fin : parse le score de validation depuis l'étape 6, met à jour le store
+   769→
+   770→### 8.3 `PekCoTPipeline`
+   771→
+   772→- **Affichage conditionnel** : Visible uniquement quand `steps.some(s => s.status !== "pending")`
+   773→- **Desktop** : Stepper horizontal avec ligne de connexion animée (Framer Motion), 7 cercles icônes
+   774→- **Mobile** : Stepper vertical avec cartes empilées (AnimatePresence)
+   775→- **Icônes par statut** :
+   776→  - `pending` → `Circle` (gris)
+   777→  - `active` → `Loader2` (ambre, rotation infinie)
+   778→  - `done` → `CheckCircle2` (vert)
+   779→  - `error` → `AlertCircle` (rouge)
+   780→- **Interactivité** : Cliquer sur une étape terminée affiche sa sortie
+   781→- **Timer** : Compteur de secondes pendant la génération
+   782→
+   783→### 8.4 `PekStepOutput`
+   784→
+   785→- **Affichage conditionnel** : Seulement si une étape a du contenu
+   786→- **Loading state** : Skeleton placeholders pendant la génération
+   787→- **Rendu** : `ReactMarkdown` avec styles prose personnalisés
+   788→  - Code inline : fond muted, texte ambre monospace
+   789→  - Code blocks : fond zinc-900, monospace, scroll horizontal
+   790→  - Blockquotes : bordure gauche ambre
+   791→- **Actions** : Bouton "Copier" avec feedback visuel (coche verte 2s)
+   792→
+   793→### 8.5 `PekSessionsList`
+   794→
+   795→- **Chargement** : `useEffect` → `GET /api/sessions` au mount
+   796→- **Mapping** : Status DB → Status UI (`in_progress`→`running`, `completed`→`completed`)
+   797→- **Cartes de session** :
+   798→  - Titre + date formatée (date-fns, locale fr)
+   799→  - Badge de statut (coloré : ambre/vert/rouge)
+   800→  - Badge de complexité
+   801→  - Score (étoile ambre + valeur colorée selon seuil)
+   802→  - Boutons : "Voir" (charge la session dans le pipeline) / "Supprimer" (AlertDialog de confirmation)
+   803→- **État vide** : Icône Inbox + texte incitatif + bouton "Rafraîchir"
+   804→- **Scroll** : `max-h-[600px] overflow-y-auto` avec scrollbar custom
+   805→
+   806→### 8.6 `PekTemplatesGallery`
+   807→
+   808→- **Templates par défaut** : 5 templates codés en dur dans le store (`DEFAULT_TEMPLATES`)
+   809→  - Kit Web App (Globe) — blocs A,B,C,D,E,F,G,H
+   810→  - Kit Agent IA (Bot) — blocs A,C,D,E,F,G,H,I
+   811→  - Kit Pipeline Data (Database) — blocs A,B,D,E,F,H,I,J
+   812→  - Kit Recherche (BookOpen) — blocs A,C,D,F,H,I,J
+   813→  - Kit Formation (GraduationCap) — blocs A,C,F,G,H,I,J
+   814→- **Création custom** : Dialog avec nom, description, system prompt, sélection de blocs
+   815→- **Action "Utiliser"** : Applique les blocs du template et navigue vers l'onglet session
+   816→
+   817→### 8.7 `PekGuide`
+   818→
+   819→- **Structure** : 4 accordeons (Accordion, type="multiple", 2 ouverts par défaut) :
+   820→  1. **Méthodologie CoT** : 7 cartes décrivant chaque étape avec 4 sous-points
+   821→  2. **Blocs A-J** : 10 cartes avec nom, badges, description
+   822→  3. **Contraintes & Limites** : Contraintes techniques + limites connues
+   823→  4. **Contrôle Qualité** : Barème 25pts (10+8+7), barème de qualité (A/B/C/D)
+   824→
+   825→### 8.8 `PekValidationReport`
+   826→
+   827→- **Affichage conditionnel** : Seulement si `validationScore` est non-null
+   828→- **Score circulaire** : SVG animé (Framer Motion), cercle progressif avec score au centre
+   829→- **Détails** : 3 barres de progression (Complétude /10, Cohérence /8, Qualité /7)
+   830→- **Checklist** : Grille de 7-12 contrôles avec icônes ✅/❌
+   831→- **Couleurs dynamiques** : ≥22 vert, ≥20 ambre, <20 rouge
+   832→- **Action** : Bouton "Régénérer" si score < 22
+   833→
+   834→### 8.9 `PekFooter`
+   835→
+   836→- **Position** : Sticky en bas (`mt-auto`), bordure supérieure
+   837→- **Contenu** : Icône BrainCircuit + texte branding + copyright avec année dynamique
+   838→
+   839→---
+   840→
+   841→## 9. Système de Validation & Scoring
+   842→
+   843→### 9.1 Barème
+   844→
+   845→| Critère | Points Maximum | Description |
+   846→|---------|:--------------:|-------------|
+   847→| **Complétude** | 10 | Tous les blocs sélectionnés présents et remplis |
+   848→| **Cohérence** | 8 | Cohérence interne et logique entre blocs |
+   849→| **Qualité** | 7 | Clarté, précision, utilité du contenu |
+   850→| **TOTAL** | **25** | |
+   851→
+   852→### 9.2 Évaluation Automatique (Étape 6 du Pipeline)
+   853→
+   854→Après l'étape 6 (VALIDATION), le système calcule :
+   855→
+   856→1. **Complétude** : Compte les blocs mentionnés dans la sortie de validation (`Bloc X`, `bloc X`, `X:`, `X :`) / blocs sélectionnés × 10.
+   857→2. **Cohérence** : Par défaut 8 (évaluation LLM).
+   858→3. **Qualité** : Par défaut 7 (évaluation LLM).
+   859→4. **Total** : Somme des trois.
+   860→
+   861→### 9.3 Évaluation Algorithmique (`POST /api/validate`)
+   862→
+   863→Validation déterministe sans LLM :
+   864→
+   865→- **Complétude** : Détection de patterns textuels pour chaque bloc dans le contenu.
+   866→- **Cohérence** : Vérifie la présence de headings (`###`, `##`), séparateurs (`---`), couverture de blocs ≥ 80%.
+   867→- **Qualité** : Vérifie la présence d'exemples, la longueur (>500, >2000), la présence de code blocks.
+   868→
+   869→### 9.4 Checks de Validation
+   870→
+   871→Liste des contrôles automatiques (12 items) :
+   872→
+   873→1. Complétude des blocs (X/N)
+   874→2. Références croisées cohérentes
+   875→3. Exemples dans 4+ domaines
+   876→4. Préservation du contenu original
+   877→5. Fidélité au projet source
+   878→6. Structuration conforme PEK
+   879→7. Variables et placeholders définis
+   880→8. Cas d'erreur couverts
+   881→9. Instructions claires et non ambigües
+   882→10. Formats de sortie spécifiés
+   883→11. Pas de greenwashing détecté
+   884→12. Mécanismes de feedback prévus
+   885→
+   886→### 9.5 Grades
+   887→
+   888→| Score | Grade | Label | Couleur |
+   889→|:-----:|:-----:|-------|---------|
+   890→| ≥ 22 | A | Excellent, prêt à l'export | `emerald-500` |
+   891→| 20-21 | B | Acceptable, améliorations recommandées | `amber-500` |
+   892→| 16-19 | C | Moyen | — |
+   893→| < 16 | D | Insuffisant, régénération requise | `red-500` |
+   894→
+   895→---
+   896→
+   897→## 10. Templates & Modèles Réutilisables
+   898→
+   899→### 10.1 Templates par Défaut
+   900→
+   901→| ID | Nom | Icône | Blocs | System Prompt |
+   902→|----|-----|-------|-------|---------------|
+   903→| tpl-webapp | Kit Web App | Globe | A,B,C,D,E,F,G,H | "Tu es un expert en développement web..." |
+   904→| tpl-agent | Kit Agent IA | Bot | A,C,D,E,F,G,H,I | "Tu es un expert en agents IA..." |
+   905→| tpl-pipeline | Kit Pipeline Data | Database | A,B,D,E,F,H,I,J | "Tu es un expert en data engineering..." |
+   906→| tpl-recherche | Kit Recherche | BookOpen | A,C,D,F,H,I,J | "Tu es un chercheur expérimenté..." |
+   907→| tpl-formation | Kit Formation | GraduationCap | A,C,F,G,H,I,J | "Tu es un expert en pédagogie..." |
+   908→
+   909→### 10.2 Modèle de Données Template (DB)
+   910→
+   911→```prisma
+   912→model Template {
+   913→  id          String   @id @default(cuid())
+   914→  name        String                  // Nom affiché
+   915→  description String                  // Description courte
+   916→  systemPrompt String                 // Instructions système pour le LLM
+   917→  blocks      String   @default("A,C,E,G,H")  // Blocs séparés par virgules
+   918→  isDefault   Boolean  @default(false)         // Template système ?
+   919→  createdAt   DateTime @default(now())
+   920→  updatedAt   DateTime @updatedAt
+   921→}
+   922→```
+   923→
+   924→### 10.3 Création de Template Custom
+   925→
+   926→Via le Dialog dans `PekTemplatesGallery` :
+   927→- Nom (requis)
+   928→- Description
+   929→- System Prompt (textarea monospace)
+   930→- Sélection de blocs (checkboxes A-J)
+   931→
+   932→Le template est stocké côté client dans le state local (non persisté en DB via la UI actuelle — l'API existe mais n'est pas encore connectée au composant).
+   933→
+   934→---
+   935→
+   936→## 11. Design System & Contraintes Visuelles
+   937→
+   938→### 11.1 Palette de Couleurs
+   939→
+   940→| Élément | Couleur | Tailwind Class |
+   941→|---------|---------|----------------|
+   942→| **Primaire** | Ambre/Gold | `amber-500`, `amber-600`, `amber-700` |
+   943→| **Succès** | Émeraude | `emerald-500` |
+   944→| **Erreur** | Rouge | `red-500` |
+   945→| **Fond** | Background system | `bg-background` |
+   946→| **Texte** | Foreground system | `text-foreground` |
+   947→| **Muted** | System muted | `text-muted-foreground`, `bg-muted` |
+   948→| **Interdits** | Indigo, Bleu | ❌ Jamais utilisés sauf demande explicite |
+   949→
+   950→### 11.2 Typographie
+   951→
+   952→- **Font Sans** : Geist Sans (`--font-geist-sans`)
+   953→- **Font Mono** : Geist Mono (`--font-geist-mono`)
+   954→- **Titres** : `font-semibold tracking-tight`
+   955→- **Labels** : `text-sm font-medium`
+   956→- **Descriptions** : `text-xs text-muted-foreground`
+   957→- **Badges** : `text-[10px]` ou `text-[11px]`
+   958→
+   959→### 11.3 Animations (Framer Motion)
+   960→
+   961→- **Transitions de page** : `AnimatePresence mode="wait"`, fade + translateY (8px)
+   962→- **Pipeline stepper** : Progression de la ligne ambre, rotation du Loader2
+   963→- **Cartes** : `initial={{ opacity: 0, y: 10 }}` → `animate={{ opacity: 1, y: 0 }}`
+   964→- **Score circulaire** : `strokeDasharray` animé de 0 à la valeur cible
+   965→- **Checklist** : Stagger avec `delay: index * 0.03`
+   966→
+   967→### 11.4 Responsive
+   968→
+   969→- **Mobile-first** : Tous les composants s'adaptent.
+   970→- **Breakpoints** : `sm:` (640px), `md:` (768px), `lg:` (1024px)
+   971→- **Pipeline** : Horizontal sur desktop (`hidden md:block`), vertical sur mobile (`md:hidden`)
+   972→- **Grilles** : `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-3`
+   973→- **Header** : Navigation complète sur desktop, Sheet sur mobile
+   974→
+   975→### 11.5 Règles de Layout
+   976→
+   977→- **Footer sticky** : `min-h-screen flex flex-col` sur le wrapper + `mt-auto` sur le footer
+   978→- **Max width** : `max-w-7xl mx-auto` pour le contenu principal
+   979→- **Padding** : `px-4 py-6 sm:px-6 lg:px-8`
+   980→- **Scroll custom** : Scrollbar stylisée pour les listes longues
+   981→
+   982→---
+   983→
+   984→## 12. Flux de Données End-to-End
+   985→
+   986→### 12.1 Création de Session + Pipeline
+   987→
+   988→```
+   989→[Utilisateur remplit le formulaire]
+   990→         │
+   991→         ▼
+   992→[Validation Zod côté client]
+   993→         │
+   994→         ▼
+   995→[POST /api/sessions] ──→ [Prisma : Project.create + Session.create + 7× Step.create]
+   996→         │                        │
+   997→         │                        ▼
+   998→         │               [Response : session avec steps]
+   999→         │
+  1000→         ├──→ [pollStepStatus(sessionId)]  ← Boucle asynchrone (toutes les 2s)
+  1001→         │         │
+  1002→         │         ▼
+  1003→         │    [GET /api/sessions/{id}/steps/{n}] × 7
+  1004→         │         │
+  1005→         │         ▼
+  1006→         │    [Mise à jour du store : steps[], stepOutputs[], status]
+  1007→         │
+  1008→         ▼
+  1009→[POST /api/sessions/{id}/execute]  ← Non-bloquant
+  1010→         │
+  1011→         ▼
+  1012→[Pour chaque étape 1→7 :]
+  1013→    ├── [UPDATE Step → status: 'running']
+  1014→    ├── [UPDATE Session → currentStep: N]
+  1015→    ├── [ZAI.create() → zai.chat.completions.create()]
+  1016→    │        └── messages: [system_prompt + accumulated_context]
+  1017→    ├── [UPDATE Step → status: 'completed', output, duration]
+  1018→    └── [Si étape 6 : computeAndSaveValidation()]
+  1019→              └── [Prisma : Validation.create]
+  1020→         │
+  1021→         ▼
+  1022→[UPDATE Session → status: 'completed']
+  1023→         │
+  1024→         ▼
+  1025→[Response → parse score depuis output étape 6]
+  1026→         │
+  1027→         ▼
+  1028→[Store : setValidationScore, setValidationDetails, setIsGenerating(false)]
+  1029→```
+  1030→
+  1031→### 12.2 Consultation d'une Session Passée
+  1032→
+  1033→```
+  1034→[Clic "Voir" sur une session]
+  1035→         │
+  1036→         ▼
+  1037→[GET /api/sessions/{id}] ──→ [Prisma : findUnique with steps + validations]
+  1038→         │
+  1039→         ▼
+  1040→[Mapping des données dans le store :]
+  1041→    ├── setSteps(loadedSteps)
+  1042→    ├── setStepOutput(i, output) × N
+  1043→    ├── setValidationScore(score)
+  1044→    ├── setValidationDetails({ completeness, coherence, quality, checks })
+  1045→    └── setActiveTab("session")
+  1046→         │
+  1047→         ▼
+  1048→[Affichage du pipeline + output + validation]
+  1049→```
+  1050→
+  1051→---
+  1052→
+  1053→## 13. Règles d'Implémentation Inviolables
+  1054→
+  1055→### 13.1 Règles Architecturales
+  1056→
+  1057→1. **Un seul route visible** : Toute l'UI est dans `src/app/page.tsx` (route `/`). Jamais de routes additionnelles.
+  1058→2. **API Routes uniquement** : Utiliser `app/api/` pour toute logique serveur. Pas de Server Actions.
+  1059→3. **z-ai-web-dev-sdk côté serveur UNIQUEMENT** : Jamais d'import SDK côté client.
+  1060→4. **Port 3000 unique** : Le dev server Next.js tourne exclusivement sur le port 3000.
+  1061→5. **Pas de `bun run build`** : Utiliser uniquement `bun run dev` et `bun run lint`.
+  1062→
+  1063→### 13.2 Règles de Code
+  1064→
+  1065→6. **TypeScript strict** : Typage explicite pour toutes les interfaces, paramètres et retours.
+  1066→7. **Composants shadcn/ui** : Toujours privilégier les composants existants (`src/components/ui/`). Ne jamais reconstruire.
+  1067→8. **Imports** : Utiliser `@/` pour les chemins relatifs au projet.
+  1068→9. **Pas de test code** : Ne jamais écrire de fichiers de test.
+  1069→10. **Store comme source de vérité UI** : Toute la state UI passe par le Zustand store.
+  1070→
+  1071→### 13.3 Règles UX/UI
+  1072→
+  1073→11. **Pas de bleu/indigo** : Palette ambre/gold uniquement pour les éléments primaires.
+  1074→12. **Footer sticky** : Toujours visible en bas, poussé naturellement par le contenu.
+  1075→13. **Mobile-first responsive** : Touch targets ≥ 44px, grilles adaptatives.
+  1076→14. **Semantic HTML** : Utiliser `main`, `header`, `nav`, `footer`, `section`.
+  1077→15. **Dark mode par défaut** : `defaultTheme="dark"` dans le ThemeProvider.
+  1078→16. **Accessibilité** : `sr-only` pour les labels d'icônes, ARIA labels sur les boutons.
+  1079→
+  1080→### 13.4 Règles Métier PEK
+  1081→
+  1082→17. **Blocs A et H obligatoires** : Ils ne peuvent jamais être désélectionnés.
+  1083→18. **Minimum 2 blocs** : Une session ne peut pas être lancée avec moins de 2 blocs.
+  1084→19. **Chain-of-Thought vrai** : Chaque appel LLM reçoit les sorties accumulées des étapes précédentes. Jamais d'appels parallèles dans le pipeline.
+  1085→20. **Scoring /25** : La validation est toujours sur 25 points (10 + 8 + 7).
+  1086→21. **Langue française** : L'interface et les contenus par défaut sont en français.
+  1087→22. **Pas de greenwashing** : Les prompts système interdisent les fausses promesses.
+  1088→23. **4+ domaines d'exemples** : Chaque kit doit inclure des exemples variés dans au moins 4 domaines.
+  1089→
+  1090→---
+  1091→
+  1092→## 14. Glossaire Technique
+  1093→
+  1094→| Terme | Définition |
+  1095→|-------|------------|
+  1096→| **PEK** | Prompt-Engineering-Kit — Le produit lui-même |
+  1097→| **CoT** | Chain-of-Thought — Méthodologie de raisonnement séquentiel en 7 étapes |
+  1098→| **Chaining** | Accumulation de contexte entre les étapes (output N → input N+1) |
+  1099→| **Super-Agent** | LLM configuré en tant qu'architecte autonome orchestrant le pipeline |
+  1100→| **Bloc** | Module A-J composant un kit PEK |
+  1101→| **Session** | Une exécution complète du pipeline pour un projet donné |
+  1102→| **Step** | Une des 7 étapes du pipeline CoT |
+  1103→| **Validation** | Évaluation qualité du kit généré (score /25) |
+  1104→| **Template** | Modèle préconfiguré de sélection de blocs + system prompt |
+  1105→| **Polling** | Mécanisme de vérification périodique du statut des étapes (toutes les 2s) |
+  1106→| **z-ai-web-dev-sdk** | SDK pour les appels LLM (backend uniquement) |
+  1107→| **cuid** | Identifiant unique collision-resistant (utilisé par Prisma) |
+  1108→
+  1109→---
+  1110→
+  1111→## 15. Matrice de Diagnostic
+  1112→
+  1113→Utilisez cette matrice pour diagnostiquer et résoudre les problèmes.
+  1114→
+  1115→### 15.1 Problèmes Frontend
+  1116→
+  1117→| Symptôme | Cause Probable | Solution |
+  1118→|----------|---------------|----------|
+  1119→| Page blanche | Erreur d'import/hydration | Vérifier `dev.log`, corriger les imports manquants |
+  1120→| Onglets ne changent pas | `setActiveTab` non appelé | Vérifier le store Zustand et les Event Handlers |
+  1121→| Pipeline ne se lance pas | Validation Zod échouée | Vérifier les min lengths (title:3, description:10, sourceContent:20) |
+  1122→| Steps restent "pending" | Polling non démarré | Vérifier `pollStepStatus()` dans `pek-session-form.tsx` |
+  1123→| Score non affiché | Regex de parsing échouée | Vérifier le format `{N}/25` dans l'output de l'étape 6 |
+  1124→| Footer flottant | Missing `min-h-screen flex flex-col` | Ajouter sur le wrapper racine dans `page.tsx` |
+  1125→| Animations saccadées | Framer Motion key manquant | Vérifier `key={activeTab}` sur `AnimatePresence` |
+  1126→
+  1127→### 15.2 Problèmes Backend
+  1128→
+  1129→| Symptôme | Cause Probable | Solution |
+  1130→|----------|---------------|----------|
+  1131→| `POST /api/sessions` 500 | Schema Prisma non synchronisé | Exécuter `bun run db:push` |
+  1132→| LLM timeout | Réponse trop longue | Le SDK gère le timeout nativement |
+  1133→| Score validation = 0 | Aucun bloc détecté | Vérifier que `selectedBlocks` est bien en format "A,C,E" |
+  1134→| Steps non créés | Erreur dans la création Prisma | Vérifier le `create` nested dans `sessions/route.ts` |
+  1135→| Session stuck "in_progress" | Pipeline crashé silencieusement | Vérifier les logs serveur, le status doit passer à "error" |
+  1136→
+  1137→### 15.3 Problèmes de Données
+  1138→
+  1139→| Symptôme | Cause Probable | Solution |
+  1140→|----------|---------------|----------|
+  1141→| Anciennes sessions avec score null | Validation non encore implémentée | Le fallback dans le composant gère les null |
+  1142→| Blocs obligatoires désélectionnés | `toggleBlock` bypassé | Vérifier la logique `if (config?.required) return state` |
+  1143→| Store non réinitialisé | `resetPipeline()` non appelé | Toujours appeler avant une nouvelle session |
+  1144→
+  1145→---
+  1146→
+  1147→## Annexe A : Formule de Mapping Store ↔ DB
+  1148→
+  1149→```
+  1150→DB Status          →  Store Status
+  1151→─────────────────────────────────────
+  1152→"in_progress"      →  "running"
+  1153→"completed"        →  "completed"
+  1154→"error"            →  "error"
+  1155→(pas de "pending" en DB pour session) → "pending" (défaut création)
+  1156→```
+  1157→
+  1158→```
+  1159→Store Step Status  →  DB Step Status
+  1160→─────────────────────────────────────
+  1161→"pending"          →  "pending"
+  1162→"active"           →  "running"
+  1163→"done"             →  "completed"
+  1164→"error"            →  "error"
+  1165→```
+  1166→
+  1167→## Annexe B : Structure du Markdown Export
+  1168→
+  1169→```markdown
+  1170→# Prompt-Engineering-Kit v4.0 — {titre}
+  1171→
+  1172→> Généré le {date complète}
+  1173→> Projet : {nom du projet}
+  1174→> Complexité : {complexité} | Langue : {langue}
+  1175→> Blocs sélectionnés : {blocs}
+  1176→
+  1177→---
+  1178→
+  1179→## Table des matières
+  1180→- [Étape 1 : COMPRÉHENSION](#...)
+  1181→- [Étape 2 : DÉCOMPOSITION](#...)
+  1182→- ...
+  1183→
+  1184→---
+  1185→
+  1186→## Contexte de la session
+  1187→{context}
+  1188→
+  1189→---
+  1190→
+  1191→## Étape 1 — COMPRÉHENSION
+  1192→> Statut : completed
+  1193→> Durée : 12s
+  1194→
+  1195→{output étape 1}
+  1196→
+  1197→---
+  1198→
+  1199→## Étape 7 — AMÉLIORATION
+  1200→{output étape 7}
+  1201→
+  1202→---
+  1203→
+  1204→## Rapport de validation
+  1205→
+  1206→### Score global
+  1207→| Critère | Score | Maximum |
+  1208→|---------|-------|---------|
+  1209→| Complétude | 8 | 10 |
+  1210→| Cohérence | 7 | 8 |
+  1211→| Qualité | 6 | 7 |
+  1212→| **Total** | **21** | **25** |
+  1213→
+  1214→**Note : B (Bon)** — ✅ Validé
+  1215→
+  1216→### Vérifications détaillées
+  1217→- ✅ Complétude des blocs (4/5)
+  1218→- ❌ Exemples dans 4+ domaines
+  1219→- ...
+  1220→
+  1221→---
+  1222→
+  1223→*Généré par Prompt-Engineering-Kit v4.0 — Méthodologie Chain-of-Thought en 7 étapes*
+  1224→```
+  1225→
+  1226→---
+  1227→
+  1228→> **Fin du Méta-Prompt-Maître**
+  1229→> Ce document constitue la spécification vivante de PEK v4.0. Il doit être mis à jour pour toute modification architecturale, fonctionnelle ou technique de l'application.

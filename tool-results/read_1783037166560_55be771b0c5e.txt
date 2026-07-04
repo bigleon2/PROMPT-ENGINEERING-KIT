@@ -1,0 +1,690 @@
+     1→import { NextRequest, NextResponse } from 'next/server';
+     2→import { db } from '@/lib/db';
+     3→import ZAI from 'z-ai-web-dev-sdk';
+     4→
+     5→interface StepInstruction {
+     6→  stepNumber: number;
+     7→  name: string;
+     8→  instruction: string;
+     9→}
+    10→
+    11→const STEP_INSTRUCTIONS: StepInstruction[] = [
+    12→  {
+    13→    stepNumber: 1,
+    14→    name: 'COMPRÉHENSION',
+    15→    instruction: `**Étape 1 : COMPRÉHENSION**
+    16→Analyse en profondeur du projet fourni. Identifie :
+    17→- L'objectif principal du projet IA
+    18→- Le domaine d'application
+    19→- Les technologies et frameworks utilisés
+    20→- Les acteurs impliqués (développeurs, utilisateurs finaux, etc.)
+    21→- Le niveau de complexité global
+    22→- Les points clés à préserver absolument
+    23→
+    24→Format de sortie : Analyse structurée avec sections claires.`,
+    25→  },
+    26→  {
+    27→    stepNumber: 2,
+    28→    name: 'DÉCOMPOSITION',
+    29→    instruction: `**Étape 2 : DÉCOMPOSITION**
+    30→Décompose le projet en composants réutilisables. Pour chaque composant :
+    31→- Identifie sa responsabilité principale
+    32→- Définit ses entrées/sorties
+    33→- Note les dépendances avec d'autres composants
+    34→- Évalue sa réutilisabilité potentielle
+    35→- Classe par priorité de conversion en bloc prompt
+    36→
+    37→Format de sortie : Liste structurée des composants avec leurs caractéristiques.`,
+    38→  },
+    39→  {
+    40→    stepNumber: 3,
+    41→    name: 'EXTRACTION',
+    42→    instruction: `**Étape 3 : EXTRACTION**
+    43→Extrais les patterns récurrents et les éléments réutilisables :
+    44→- Patterns de conception identifiés
+    45→- Structures de données communes
+    46→- Workflows récurrents
+    47→- Contraintes techniques récurrentes
+    48→- Bonnes pratiques observées
+    49→- Exemples concrets dans 4+ domaines différents
+    50→
+    51→Format de sortie : Catalogue des patterns avec exemples concrets.`,
+    52→  },
+    53→  {
+    54→    stepNumber: 4,
+    55→    name: 'STRUCTURATION',
+    56→    instruction: `**Étape 4 : STRUCTURATION**
+    57→Organise les éléments extraits en une structure de kit cohérente :
+    58→- Mappe chaque élément aux blocs A-J du PEK
+    59→- Définit les relations entre les blocs
+    60→- Établit l'ordre recommandé d'utilisation
+    61→- Identifie les blocs obligatoires vs optionnels
+    62→- Crée le plan d'assemblage du kit
+    63→
+    64→Blocs PEK : A(Contexte) B(Instructions) C(Exemples) D(Contraintes) E(Format Sortie) F(Métadonnées) G(Validation) H(Variables) I(Garde-fous) J(Amélioration)
+    65→
+    66→Format de sortie : Structure hiérarchique du kit avec mappage aux blocs.`,
+    67→  },
+    68→  {
+    69→    stepNumber: 5,
+    70→    name: 'GÉNÉRATION',
+    71→    instruction: `**Étape 5 : GÉNÉRATION**
+    72→Génère le contenu complet pour chaque bloc sélectionné du kit PEK. Pour chaque bloc :
+    73→- Rédige le contenu détaillé et opérationnel
+    74→- Inclue des exemples concrets et variés (4+ domaines)
+    75→- Ajoute des placeholders pour les variables
+    76→- Prévoit les cas d'erreur et leurs traitements
+    77→- Rédige en {language} avec la complexité {complexity}
+    78→
+    79→Format de sortie : Contenu complet de chaque bloc en Markdown structuré.`,
+    80→  },
+    81→  {
+    82→    stepNumber: 6,
+    83→    name: 'VALIDATION',
+    84→    instruction: `**Étape 6 : VALIDATION**
+    85→Évalue la qualité du kit généré selon les critères PEK :
+    86→- **Complétude** : Tous les blocs sélectionnés sont-ils présents et complets ?
+    87→- **Cohérence** : Les références entre blocs sont-elles correctes ?
+    88→- **Qualité** : Les exemples sont-ils pertinents et variés (4+ domaines) ?
+    89→- **Réutilisabilité** : Le kit peut-il être réutilisé sans modification majeure ?
+    90→- **Fidélité** : Le contenu original est-il fidèlement préservé ?
+    91→
+    92→Pour chaque critère, donne une note et un commentaire justifié.
+    93→Identifie les points d'amélioration prioritaires.
+    94→
+    95→Format de sortie : Rapport de validation structuré avec scores et recommandations.`,
+    96→  },
+    97→  {
+    98→    stepNumber: 7,
+    99→    name: 'AMÉLIORATION',
+   100→    instruction: `**Étape 7 : AMÉLIORATION**
+   101→Applique les corrections et améliorations identifiées à l'étape de validation :
+   102→- Corrige les incohérences détectées
+   103→- Enrichit les exemples si nécessaire (objectif 4+ domaines)
+   104→- Optimise les formulations pour la clarté
+   105→- Ajoute les éléments manquants
+   106→- Produit le kit final versionné
+   107→
+   108→Format de sortie : Kit PEK final complet en Markdown, prêt à l'emploi, avec numéro de version.`,
+   109→  },
+   110→];
+   111→
+   112→const CHAINING_STEP_INSTRUCTIONS: StepInstruction[] = [
+   113→  {
+   114→    stepNumber: 1,
+   115→    name: 'PRÉPARATION',
+   116→    instruction: `**Étape 1 : PRÉPARATION**
+   117→Extraction et normalisation des données du projet source.
+   118→- Identifier les composants clés du projet
+   119→- Extraire les métadonnées et patterns principaux  
+   120→- Normaliser la structure pour le traitement
+   121→- Identifier les blocs PEK pertinents
+   122→
+   123→Format de sortie : Inventaire structuré des composants avec classification.`,
+   124→  },
+   125→  {
+   126→    stepNumber: 2,
+   127→    name: 'TRAITEMENT',
+   128→    instruction: `**Étape 2 : TRAITEMENT**
+   129→Application de la stratégie de génération pour les blocs sélectionnés.
+   130→- Pour chaque bloc sélectionné, générer le contenu complet
+   131→- Appliquer les patterns identifiés à l'étape 1
+   132→- Produire des versions intermédiaires (brouillon)
+   133→
+   134→Format de sortie : Contenu détaillé de chaque bloc en Markdown.`,
+   135→  },
+   136→  {
+   137→    stepNumber: 3,
+   138→    name: 'VÉRIFICATION',
+   139→    instruction: `**Étape 3 : VÉRIFICATION**
+   140→Auto-évaluation et correction du contenu généré.
+   141→- Vérifier la cohérence entre les blocs
+   142→- Valider la complétude par rapport aux blocs sélectionnés
+   143→- Détecter et corriger les incohérences
+   144→- Évaluer la qualité des exemples (4+ domaines)
+   145→
+   146→Format de sortie : Rapport de vérification avec corrections appliquées.`,
+   147→  },
+   148→  {
+   149→    stepNumber: 4,
+   150→    name: 'OPTIMISATION',
+   151→    instruction: `**Étape 4 : OPTIMISATION**
+   152→Production des versions finales optimisées.
+   153→- Version Pro : Contenu détaillé et complet avec annotations
+   154→- Version Clean : Contenu épuré, prêt à l'emploi
+   155→- Version Compacte : Résumé synthétique du kit
+   156→
+   157→Format de sortie : Kit PEK final en 3 versions (Pro, Clean, Compacte) en Markdown.`,
+   158→  },
+   159→];
+   160→
+   161→function buildSystemPrompt(session: {
+   162→  selectedBlocks: string;
+   163→  complexity: string;
+   164→  language: string;
+   165→  constraints: string;
+   166→  executionMode: string;
+   167→}): string {
+   168→  const complexityMap: Record<string, string> = {
+   169→    simple: 'Simple — Explications basiques, exemples directs',
+   170→    moyen: 'Moyen — Équilibré entre simplicité et détail technique',
+   171→    avance: 'Avancé — Détail technique poussé, edge cases couverts',
+   172→    expert: 'Expert — Optimisation extrême, patterns avancés, méta-prompts',
+   173→  };
+   174→
+   175→  const complexityLabel = complexityMap[session.complexity] || complexityMap['moyen'];
+   176→  const languageLabel = session.language === 'fr' ? 'Français' : session.language === 'en' ? 'English' : session.language;
+   177→
+   178→  const mode = session.executionMode || 'cot';
+   179→  let methodologyLine: string;
+   180→  let methodologySteps: string[];
+   181→
+   182→  if (mode === 'cot') {
+   183→    methodologyLine = 'Méthodologie active: Chain-of-Thought en 7 étapes';
+   184→    methodologySteps = [
+   185→      '  ÉTAPE 1 — COMPRÉHENSION : Lire tout le matériel, identifier le type de projet, formuler l\'objectif en une phrase, lister les contraintes, déterminer la complexité. Livrable : résumé exécutif.',
+   186→      '  ÉTAPE 2 — DÉCOMPOSITION : Identifier les composants principaux, cartographier les dépendances, repérer les patterns récurrents, sélectionner les blocs A-J adaptatifs. Livrable : carte mentale + sélection blocs.',
+   187→      '  ÉTAPE 3 — EXTRACTION : Extraire objectif principal, sous-objectifs, règles absolues, limitations, étapes successives, décisions clés, format de sortie, stack technique. Livrable : liste exhaustive.',
+   188→      '  ÉTAPE 4 — STRUCTURATION : Mapper les éléments extraits vers l\'architecture du kit (README, config.yaml, prompts/00-07, examples/, tests/, build/). Livrable : plan de structuration.',
+   189→      '  ÉTAPE 5 — GÉNÉRATION : Produire tous les fichiers du kit dans l\'ordre : README.md → config/config.yaml → prompts/00_System.md à 07_Reasoning.md → examples/ (3 fichiers différenciés) → tests/test_cases.md → build/prompt_final.md → versions/VERSION.yaml. Livrable : kit complet.',
+   190→      '  ÉTAPE 6 — VALIDATION : Vérifier tous les fichiers présents et non vides, références croisées valides, prompt_final directement utilisable, exemples de 4+ domaines variés, structure adaptée au type de projet, score qualité >= 22/25. Livrable : rapport de validation.',
+   191→      '  ÉTAPE 7 — AMÉLIORATION : Identifier 3 points d\'amélioration concrets, cas limites non couverts, tests additionnels suggérés, tracer la version. Livrable : recommandations.',
+   192→    ];
+   193→  } else if (mode === 'chaining') {
+   194→    methodologyLine = 'Méthodologie active: Prompt Chaining en 4 étapes pipeline';
+   195→    methodologySteps = [
+   196→      '  ÉTAPE 1 — PRÉPARATION : Extraction et normalisation des données du projet source. Identifier composants clés, extraire métadonnées et patterns, normaliser la structure, identifier les blocs PEK pertinents. Livrable : inventaire structuré.',
+   197→      '  ÉTAPE 2 — TRAITEMENT : Application de la stratégie de génération pour chaque bloc sélectionné. Pour chaque bloc, générer le contenu complet en appliquant les patterns identifiés, produire des versions intermédiaires. Livrable : contenu détaillé de chaque bloc.',
+   198→      '  ÉTAPE 3 — VÉRIFICATION : Auto-évaluation et correction. Vérifier la cohérence entre blocs, valider la complétude, détecter et corriger les incohérences, évaluer la qualité des exemples (4+ domaines). Livrable : rapport avec corrections appliquées.',
+   199→      '  ÉTAPE 4 — OPTIMISATION : Production des versions finales. Version Pro (détaillée avec annotations), Version Clean (épuraée prêt à l\'emploi), Version Compacte (résumé synthétique). Livrable : kit PEK final en 3 versions.',
+   200→    ];
+   201→  } else {
+   202→    methodologyLine = 'Méthodologie active: HYBRIDE CoT + Chaining — Bascule automatique selon la complexité';
+   203→    methodologySteps = [
+   204→      '  MODE HYBRIDE : Le système détermine dynamiquement la méthodologie optimale.',
+   205→      '  - Si complexité = simple : bascule automatiquement en Prompt Chaining (4 étapes pipeline).',
+   206→      '  - Si complexité = moyen ou complexe : applique le Chain-of-Thought complet (7 étapes).',
+   207→      '  ÉTAPE 1 — COMPRÉHENSION : Analyse approfondie du projet, identification du type, objectifs, contraintes.',
+   208→      '  ÉTAPE 2 — DÉCOMPOSITION : Découpage en composants, dépendances, patterns, sélection blocs A-J.',
+   209→      '  ÉTAPE 3 — EXTRACTION : Éléments clés, règles, étapes, stack technique, format de sortie.',
+   210→      '  ÉTAPE 4 — STRUCTURATION : Mapping vers l\'architecture du kit (README, config, prompts, examples, tests).',
+   211→      '  ÉTAPE 5 — GÉNÉRATION : Production de tous les fichiers du kit dans l\'ordre protocolaire.',
+   212→      '  ÉTAPE 6 — VALIDATION : Score qualité 25pts (complétude 10 + cohérence 8 + qualité 7), seuil 22/25.',
+   213→      '  ÉTAPE 7 — AMÉLIORATION : 3 améliorations concrètes, cas limites, versionnage.',
+   214→    ];
+   215→  }
+   216→
+   217→  const selectedBlocks = session.selectedBlocks === 'auto'
+   218→    ? 'AUTO — Sélection adaptative par l\'IA selon le type de projet (voir règles ci-dessous)'
+   219→    : session.selectedBlocks;
+   220→
+   221→  return [
+   222→    "# PROMPT-ENGINEERING-KIT — MÉTA-PROMPT MAÎTRE v4.0",
+   223→    "",
+   224→    "## Rôle",
+   225→    "Tu es un Architecte en Prompt Engineering spécialisé en conversion de projets IA en kits structurés, réutilisables et validés. Tu maîtrises l'assemblage automatisé de prompts, la validation qualité, le versionning et le Chain-of-Thought.",
+   226→    "",
+   227→    "## Compétences Clés",
+   228→    "1. Analyse de projets : extraction systématique d'éléments clés, tout format",
+   229→    "2. Architecture logicielle : principes SRP, modularité, faible couplage",
+   230→    "3. Prompt Engineering : best practices, Chain-of-Thought, few-shot, méta-prompts",
+   231→    "4. Automatisation : assemblage de prompts, validation par script, versionning",
+   232→    "5. Pédagogie : explication claire de concepts complexes",
+   233→    "6. Qualité : validation rigoureuse, scoring automatisé (25pts), tests systématiques",
+   234→    "",
+   235→    methodologyLine,
+   236→    ...methodologySteps,
+   237→    "",
+   238→    "## 9 Règles Critiques",
+   239→    "RÈGLE 1 — PRÉSERVATION DE L'ORIGINAL : Autorisé : structurer, clarifier, organiser. Interdit : inventer, modifier les décisions, dénaturer.",
+   240→    "RÈGLE 2 — COMPLÉTUDE DES FICHIERS : Tous les blocs sélectionnés doivent être générés exhaustivement. Contenu minimal + [À COMPLÉTER] si information manquante. Interdit : omettre, fichier vide silencieux.",
+   241→    "RÈGLE 3 — COHÉRENCE DES RÉFÉRENCES : Chemins relatifs standards, liens Markdown valides. Interdit : références inexistantes, chemins absolus, liens brisés.",
+   242→    "RÈGLE 4 — RESPECT DES SCHEMAS : Valider la conformité, signaler les écarts. Interdit : output non conforme, champs requis ignorés.",
+   243→    "RÈGLE 5 — APPLICATION DU CHAIN-OF-THOUGHT : Suivre rigoureusement les étapes dans l'ordre. Prendre le temps nécessaire, revenir en arrière si besoin. Interdit : sauter une étape, mélanger, accélérer.",
+   244→    "RÈGLE 6 — QUALITÉ DES EXEMPLES (4+ domaines) : Adapter au projet, inclure cas limites, varier les domaines (ex: web, data science, IoT, éducation, marketing, recherche). Interdit : exemples génériques, mono-domaine, doublons.",
+   245→    "RÈGLE 7 — AUTOMATISATION ET VERSIONNAGE : Utiliser les outils automatisés quand disponibles. Tracer dans VERSION.yaml. Interdit : ignorer les outils, générer manuellement si un script existe.",
+   246→    "RÈGLE 8 — DÉTECTION DE CONTENU TROMPEUR : Vérifier les allégations, rester factuel et mesurable. Interdit : greenwashing, fausses promesses, statistiques inventées.",
+   247→    "RÈGLE 9 — BOUCLE DE FEEDBACK ITÉRATIVE : Intégrer les métriques de feedback comme signal d'amélioration. Interdit : ignorer les données quantitatives disponibles.",
+   248→    "",
+   249→    "## Gestion des Cas Limites",
+   250→    "- Projet incomplet → kit avec placeholders [À COMPLÉTER] + demande de compléments",
+   251→    "- Contradictions → identifier et proposer une résolution",
+   252→    "- Informations ambiguës → présenter plusieurs interprétations",
+   253→    "- Input corrompu → signaler l'erreur, proposer un format alternatif",
+   254→    "- Auto-référence → le kit peut s'analyser lui-même ; éviter la boucle infinie",
+   255→    "- Génération circulaire → détecter et interrompre si un kit généré génère un kit",
+   256→    "",
+   257→    "## Structure Adaptative — Blocs A-J",
+   258→    "BLOC A — Résumé Exécutif (OBLIGATOIRE) : Objectif, contexte, livrables principaux. Toujours premier.",
+   259→    "BLOC B — Architecture & Composants : Diagramme des composants, dépendances, flux de données.",
+   260→    "BLOC C — Prompt / Instructions : Prompts système, instructions de traitement, règles métier.",
+   261→    "BLOC D — Données & Schemas : Schemas d'entrée/sortie, formats attendus.",
+   262→    "BLOC E — Contraintes & Règles : Limitations techniques, règles métier, invariants.",
+   263→    "BLOC F — Résultats & Outputs : Outputs produits, métriques, artefacts générés.",
+   264→    "BLOC G — Guide d'Utilisation (RECOMMANDÉ) : Instructions pas-à-pas pour reproduire ou utiliser.",
+   265→    "BLOC H — Recommandations (OBLIGATOIRE) : Axes d'amélioration, optimisations, évolutions futures. Toujours dernier.",
+   266→    "BLOC I — Tests & Validation : Cas de test, scénarios de validation.",
+   267→    "BLOC J — Glossaire & Références : Termes techniques, liens utiles, dépendances externes.",
+   268→    "",
+   269→    "## Règles de Composition",
+   270→    "1. Bloc A toujours en premier, bloc H toujours en dernier",
+   271→    "2. Ordre des blocs contextuels libre (enchaînement le plus logique)",
+   272→    "3. Chaque bloc autonome — compréhensible sans lire les autres",
+   273→    "4. Cohérence entre blocs — pas de contradictions ni redondances",
+   274→    "5. Nombre total recommandé : 5 à 9 selon la complexité",
+   275→    "",
+   276→    "## Règles de Sélection Adaptative par Type de Projet",
+   277→    "| Type de projet | Blocs recommandés |",
+   278→    "|----------------|-------------------|",
+   279→    "| Web (Next.js, React) | A + B + C + D + E + G + H + I |",
+   280→    "| Pipeline Data / ETL | A + B + D + E + F + G + H + I |",
+   281→    "| Agent IA / Chatbot | A + C + D + E + G + H + J |",
+   282→    "| Méta-outil / Framework | A + B + C + D + E + F + G + H + I + J |",
+   283→    "",
+   284→    "## Scoring Qualité (25 points)",
+   285→    "COMPLÉTUDE (10 pts) : Tous les fichiers présents, non vides, références croisées valides",
+   286→    "COHÉRENCE (8 pts) : Terminologie uniforme, pas de contradictions, examples/few-shot différenciés",
+   287→    "QUALITÉ (7 pts) : Langage clair, Markdown correct, exemples concrets 4+ domaines",
+   288→    "Score minimum requis : 22/25 (88%)",
+   289→    "",
+   290→    "## Style et Formatage",
+   291→    "- Ton : Professionnel et accessible",
+   292→    "- Paragraphes : 2-4 phrases maximum (5 max strict)",
+   293→    "- Privilégier les listes aux paragraphes longs",
+   294→    "- Titres : ## Section (H2), ### Sous-section (H3), #### Détail (H4)",
+   295→    "- Interdictions : paragraphes > 5 lignes, jargon non expliqué, redondances inter-fichiers, emojis excessifs",
+   296→    "",
+   297→    "## Contexte d'Exécution",
+   298→    "Blocs sélectionnés : " + selectedBlocks,
+   299→    "Complexité : " + complexityLabel,
+   300→    "Langue : " + languageLabel,
+   301→    (session.constraints ? "Contraintes additionnelles : " + session.constraints : ""),
+   302→    "",
+   303→    "## Écosystème d'Orchestration (v4.0)",
+   304→    "Ce kit s'inscrit dans un écosystème multi-agents :",
+   305→    "- super-agent-hybride-cot-chaining : Orchestrateur CoT + Chaining + Modules spécialisés",
+   306→    "- gen-plan : Orchestration multi-agents, planification 13 étapes séquentielles",
+   307→    "- correct-work : Vérification et correction 5 étapes, chaîne : correct-work → gen-plan → super-agent",
+   308→    "- zip-to-md : Conversion d'archives en Markdown structuré",
+   309→    "",
+   310→    "IMPORTANT : Tu dois produire le contenu de chaque bloc sélectionné en Markdown structuré, directement exploitable. Chaque bloc doit être complet et autonome.",
+   311→  ].join('\n');
+   312→}
+   313→
+   314→function buildUserMessage(
+   315→  step: StepInstruction,
+   316→  session: {
+   317→    context: string;
+   318→    sourceMaterial: string;
+   319→    results: string;
+   320→    constraints: string;
+   321→  },
+   322→  previousOutputs: { stepNumber: number; output: string }[],
+   323→  allInstructions: StepInstruction[]
+   324→): string {
+   325→  let message = '';
+   326→  message += '## Contexte de la session\n\n';
+   327→  message += (session.context || 'Non fourni') + '\n\n';
+   328→
+   329→  if (session.sourceMaterial) {
+   330→    message += '## Matériel source\n\n';
+   331→    message += session.sourceMaterial + '\n\n';
+   332→  }
+   333→
+   334→  if (session.results) {
+   335→    message += '## Résultats attendus\n\n';
+   336→    message += session.results + '\n\n';
+   337→  }
+   338→
+   339→  if (session.constraints) {
+   340→    message += '## Contraintes additionnelles\n\n';
+   341→    message += session.constraints + '\n\n';
+   342→  }
+   343→
+   344→  if (previousOutputs.length > 0) {
+   345→    message += '## Résultats des étapes précédentes\n\n';
+   346→    for (const prev of previousOutputs) {
+   347→      const stepName = allInstructions[prev.stepNumber - 1]?.name || 'Inconnue';
+   348→      message += '### Étape ' + prev.stepNumber + ' — ' + stepName + '\n\n';
+   349→      message += prev.output + '\n\n';
+   350→    }
+   351→    message += '---\n\n';
+   352→  }
+   353→
+   354→  message += step.instruction;
+   355→  return message;
+   356→}
+   357→
+   358→export async function POST(
+   359→  request: NextRequest,
+   360→  { params }: { params: Promise<{ id: string }> }
+   361→) {
+   362→  try {
+   363→    const { id } = await params;
+   364→    const zai = await ZAI.create();
+   365→
+   366→    // Load session with steps
+   367→    const session = await db.session.findUnique({
+   368→      where: { id },
+   369→      include: {
+   370→        steps: {
+   371→          orderBy: { stepNumber: 'asc' },
+   372→        },
+   373→      },
+   374→    });
+   375→
+   376→    if (!session) {
+   377→      return NextResponse.json({ success: false, error: 'Session non trouvée' }, { status: 404 });
+   378→    }
+   379→
+   380→    // Determine execution mode and instructions
+   381→    const executionMode = session.executionMode || 'cot';
+   382→    const isChaining = executionMode === 'chaining' || (executionMode === 'hybride' && session.complexity === 'simple');
+   383→    const instructions = isChaining ? CHAINING_STEP_INSTRUCTIONS : STEP_INSTRUCTIONS;
+   384→
+   385→    // Build the PEK system prompt
+   386→    const systemPrompt = buildSystemPrompt(session);
+   387→
+   388→    const previousOutputs: { stepNumber: number; output: string }[] = [];
+   389→    const stepResults: { stepNumber: number; name: string; output: string; duration: number; status: string }[] = [];
+   390→
+   391→    // Execute each step sequentially
+   392→    for (const step of session.steps) {
+   393→      const stepStartTime = Date.now();
+   394→
+   395→      // Mark step as running
+   396→      await db.step.update({
+   397→        where: { id: step.id },
+   398→        data: { status: 'running' },
+   399→      });
+   400→
+   401→      // Update session current step
+   402→      await db.session.update({
+   403→        where: { id },
+   404→        data: { currentStep: step.stepNumber },
+   405→      });
+   406→
+   407→      const stepConfig = instructions[step.stepNumber - 1];
+   408→      const userMessage = buildUserMessage(stepConfig, session, previousOutputs, instructions);
+   409→
+   410→      try {
+   411→        const completion = await zai.chat.completions.create({
+   412→          messages: [
+   413→            { role: 'assistant', content: systemPrompt },
+   414→            { role: 'user', content: userMessage },
+   415→          ],
+   416→          thinking: { type: 'disabled' },
+   417→        });
+   418→
+   419→        const output = completion.choices[0]?.message?.content || 'Erreur: aucune réponse générée';
+   420→        const duration = Math.round((Date.now() - stepStartTime) / 1000);
+   421→
+   422→        // Save step output
+   423→        await db.step.update({
+   424→          where: { id: step.id },
+   425→          data: {
+   426→            status: 'completed',
+   427→            output,
+   428→            duration,
+   429→          },
+   430→        });
+   431→
+   432→        previousOutputs.push({ stepNumber: step.stepNumber, output });
+   433→        stepResults.push({
+   434→          stepNumber: step.stepNumber,
+   435→          name: step.name,
+   436→          output,
+   437→          duration,
+   438→          status: 'completed',
+   439→        });
+   440→
+   441→        // After validation step, compute and save validation score
+   442→        // CoT: step 6, Chaining: step 3
+   443→        const validationStepNumber = isChaining ? 3 : 6;
+   444→        if (step.stepNumber === validationStepNumber) {
+   445→          const validationResult = await computeAndSaveValidation(
+   446→            id,
+   447→            session.selectedBlocks,
+   448→            output,
+   449→            previousOutputs,
+   450→            zai,
+   451→            systemPrompt,
+   452→            { complexity: session.complexity, language: session.language, constraints: session.constraints },
+   453→          );
+   454→
+   455→          // PHASE 2: Auto-iteration if score < 22/25 (max 1 retry)
+   456→          if (!validationResult.passed && validationResult.totalScore < 22) {
+   457→            // Reset the improvement/amélioration step for retry
+   458→            const improvementStep = session.steps.find(
+   459→              (s) => s.stepNumber === (isChaining ? 4 : 7)
+   460→            );
+   461→            if (improvementStep) {
+   462→              await db.step.update({
+   463→                where: { id: improvementStep.id },
+   464→                data: {
+   465→                  status: 'pending',
+   466→                  output: '',
+   467→                  duration: 0,
+   468→                },
+   469→              });
+   470→
+   471→              // Add feedback from validation to previous outputs
+   472→              previousOutputs.push({
+   473→                stepNumber: 100,
+   474→                output: `FEEDBACK DE VALIDATION (score ${validationResult.totalScore}/25 — seuil non atteint) :\n` +
+   475→                  `- Complétude: ${validationResult.completeness}/10\n` +
+   476→                  `- Cohérence: ${validationResult.coherence}/8\n` +
+   477→                  `- Qualité: ${validationResult.quality}/7\n\n` +
+   478→                  `Corrige les déficiences identifiées et régénère le kit amélioré.`,
+   479→              });
+   480→            }
+   481→          }
+   482→        }
+   483→      } catch (llmError) {
+   484→        const duration = Math.round((Date.now() - stepStartTime) / 1000);
+   485→        const errorMsg = llmError instanceof Error ? llmError.message : 'Erreur LLM inconnue';
+   486→
+   487→        await db.step.update({
+   488→          where: { id: step.id },
+   489→          data: {
+   490→            status: 'error',
+   491→            output: 'Erreur: ' + errorMsg,
+   492→            duration,
+   493→          },
+   494→        });
+   495→
+   496→        stepResults.push({
+   497→          stepNumber: step.stepNumber,
+   498→          name: step.name,
+   499→          output: 'Erreur: ' + errorMsg,
+   500→          duration,
+   501→          status: 'error',
+   502→        });
+   503→
+   504→        // Mark remaining steps as skipped
+   505→        for (const remainingStep of session.steps) {
+   506→          if (remainingStep.stepNumber > step.stepNumber && remainingStep.status === 'pending') {
+   507→            await db.step.update({
+   508→              where: { id: remainingStep.id },
+   509→              data: { status: 'skipped' },
+   510→            });
+   511→          }
+   512→        }
+   513→
+   514→        // Update session status
+   515→        await db.session.update({
+   516→          where: { id },
+   517→          data: { status: 'error' },
+   518→        });
+   519→
+   520→        return NextResponse.json({
+   521→          success: false,
+   522→          error: 'Erreur à l\'étape ' + step.stepNumber + ': ' + errorMsg,
+   523→          data: { steps: stepResults },
+   524→        }, { status: 500 });
+   525→      }
+   526→    }
+   527→
+   528→    // All steps completed successfully
+   529→    await db.session.update({
+   530→      where: { id },
+   531→      data: { status: 'completed', currentStep: 8 },
+   532→    });
+   533→
+   534→    return NextResponse.json({
+   535→      success: true,
+   536→      data: {
+   537→        sessionId: id,
+   538→        steps: stepResults,
+   539→      },
+   540→    });
+   541→  } catch (error) {
+   542→    const message = error instanceof Error ? error.message : 'Erreur lors de l\'exécution du pipeline';
+   543→    return NextResponse.json({ success: false, error: message }, { status: 500 });
+   544→  }
+   545→}
+   546→
+   547→async function computeAndSaveValidation(
+   548→  sessionId: string,
+   549→  selectedBlocks: string,
+   550→  validationOutput: string,
+   551→  allStepOutputs: { stepNumber: number; output: string }[],
+   552→  zaiInstance: Awaited<ReturnType<typeof ZAI.create>>,
+   553→  systemPrompt: string,
+   554→  sessionContext: { complexity: string; language: string; constraints: string },
+   555→): Promise<{ completeness: number; coherence: number; quality: number; totalScore: number; maxScore: number; passed: boolean }> {
+   556→  const blocks = selectedBlocks === 'auto'
+   557→    ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+   558→    : selectedBlocks.split(',').map((b) => b.trim().toUpperCase()).filter(Boolean);
+   559→
+   560→  // --- Heuristic scoring (fast, always runs) ---
+   561→  let blocksFound = 0;
+   562→  const combinedOutput = validationOutput + '\n' + (allStepOutputs.find((s) => s.stepNumber === 5)?.output || '');
+   563→  const lowerCombined = combinedOutput.toLowerCase();
+   564→  for (const block of blocks) {
+   565→    const patterns = ['Bloc ' + block, 'bloc ' + block, block + ' :', block + ':'];
+   566→    if (patterns.some((p) => combinedOutput.includes(p))) {
+   567→      blocksFound++;
+   568→    }
+   569→  }
+   570→  const heuristicCompleteness = blocks.length > 0 ? Math.min(10, Math.round((blocksFound / blocks.length) * 10)) : 0;
+   571→
+   572→  const domainKeywords = ['web', 'data', 'iot', 'éducation', 'education', 'marketing', 'recherche', 'finance', 'santé', 'health'];
+   573→  const domainCount = domainKeywords.filter((d) => lowerCombined.includes(d)).length;
+   574→  const has4PlusDomains = domainCount >= 4;
+   575→  const hasPlaceholders = lowerCombined.includes('à compléter') || lowerCombined.includes('placeholder');
+   576→  const hasErrorHandling = lowerCombined.includes('erreur') || lowerCombined.includes('error') || lowerCombined.includes('cas limite');
+   577→  const hasFeedback = lowerCombined.includes('feedback') || lowerCombined.includes('retour') || lowerCombined.includes('itération');
+   578→  const hasFormatSpec = lowerCombined.includes('format');
+   579→  const hasInstructions = lowerCombined.includes('instruction') || lowerCombined.includes('guide');
+   580→
+   581→  // --- LLM-based scoring (accurate, used as primary) ---
+   582→  let llmCompleteness = 0;
+   583→  let llmCoherence = 0;
+   584→  let llmQuality = 0;
+   585→  let llmChecks: { label: string; passed: boolean; detail: string }[] = [];
+   586→
+   587→  try {
+   588→    const allOutputsText = allStepOutputs
+   589→      .map((s) => '--- ÉTAPE ' + s.stepNumber + ' ---\n' + s.output.slice(0, 3000))
+   590→      .join('\n\n');
+   591→
+   592→    const scoringPrompt = `Tu es un évaluateur strict de kits de prompt engineering. Analyse le contenu ci-dessous et attribue un score.
+   593→
+   594→BLOCS ATTENDUS : ${blocks.join(', ')}
+   595→COMPLEXITÉ : ${sessionContext.complexity}
+   596→LANGUE : ${sessionContext.language}
+   597→
+   598→CONTENU À ÉVALUER :
+   599→${allOutputsText.slice(0, 8000)}
+   600→
+   601→Réponds UNIQUEMENT en JSON valide (pas de markdown, pas de backticks) avec cette structure exacte :
+   602→{"completeness": <0-10>, "coherence": <0-8>, "quality": <0-7>, "checks": [{"label": "<description>", "passed": <true|false>, "detail": "<raison>"}]}
+   603→
+   604→Critères :
+   605→- completeness (10pts) : Tous les blocs attendus sont présents et non vides
+   606→- coherence (8pts) : Terminologie uniforme, pas de contradictions, références croisées valides
+   607→- quality (7pts) : Langage clair, exemples concrets dans 4+ domaines, Markdown correct
+   608→
+   609→Checks obligatoires (12 items) :
+   610→1. Complétude des blocs (tous présents)
+   611→2. Références croisées cohérentes
+   612→3. Exemples dans 4+ domaines variés
+   613→4. Préservation du contenu original
+   614→5. Fidélité au projet source
+   615→6. Structuration conforme PEK (blocs A-J)
+   616→7. Variables et placeholders définis
+   617→8. Cas d'erreur et limites couverts
+   618→9. Instructions claires et non ambigües
+   619→10. Formats de sortie spécifiés
+   620→11. Pas de greenwashing ni fausses promesses
+   621→12. Mécanismes de feedback et itération prévus`;
+   622→
+   623→    const completion = await zaiInstance.chat.completions.create({
+   624→      messages: [
+   625→        { role: 'assistant', content: systemPrompt },
+   626→        { role: 'user', content: scoringPrompt },
+   627→      ],
+   628→      thinking: { type: 'disabled' },
+   629→    });
+   630→
+   631→    const raw = completion.choices[0]?.message?.content || '';
+   632→    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+   633→    if (jsonMatch) {
+   634→      const parsed = JSON.parse(jsonMatch[0]);
+   635→      llmCompleteness = Math.max(0, Math.min(10, Math.round(parsed.completeness || 0)));
+   636→      llmCoherence = Math.max(0, Math.min(8, Math.round(parsed.coherence || 0)));
+   637→      llmQuality = Math.max(0, Math.min(7, Math.round(parsed.quality || 0)));
+   638→      if (Array.isArray(parsed.checks) && parsed.checks.length >= 10) {
+   639→        llmChecks = parsed.checks.slice(0, 12).map((c: { label: string; passed: boolean; detail?: string }) => ({
+   640→          label: String(c.label),
+   641→          passed: Boolean(c.passed),
+   642→          detail: String(c.detail || ''),
+   643→        }));
+   644→      }
+   645→    }
+   646→  } catch {
+   647→    // LLM scoring failed — fall back to heuristic
+   648→  }
+   649→
+   650→  // Use LLM scores if available, otherwise heuristic
+   651→  const completeness = llmCompleteness > 0 ? llmCompleteness : heuristicCompleteness;
+   652→  const coherence = llmCoherence > 0 ? llmCoherence : 8;
+   653→  const quality = llmQuality > 0 ? llmQuality : (has4PlusDomains ? 7 : hasErrorHandling ? 6 : 5);
+   654→  const totalScore = completeness + coherence + quality;
+   655→  const maxScore = 25;
+   656→
+   657→  const checks = llmChecks.length >= 10
+   658→    ? llmChecks
+   659→    : [
+   660→        { label: 'Complétude des blocs', passed: completeness >= 7, detail: blocksFound + '/' + blocks.length + ' blocs trouvés' },
+   661→        { label: 'Références croisées cohérentes', passed: coherence >= 6, detail: 'Cohérence ' + coherence + '/8' },
+   662→        { label: 'Exemples dans 4+ domaines', passed: has4PlusDomains, detail: domainCount + ' domaines détectés' },
+   663→        { label: 'Préservation du contenu original', passed: true, detail: 'Non vérifiable automatiquement' },
+   664→        { label: 'Fidélité au projet source', passed: true, detail: 'Non vérifiable automatiquement' },
+   665→        { label: 'Structuration conforme PEK', passed: blocksFound > 0, detail: 'Blocs A-J détectés' },
+   666→        { label: 'Variables et placeholders définis', passed: hasPlaceholders, detail: hasPlaceholders ? 'Trouvés' : 'Non trouvés' },
+   667→        { label: "Cas d'erreur couverts", passed: hasErrorHandling, detail: hasErrorHandling ? 'Trouvés' : 'Non trouvés' },
+   668→        { label: 'Instructions claires', passed: hasInstructions, detail: hasInstructions ? 'Trouvées' : 'Non trouvées' },
+   669→        { label: 'Formats de sortie spécifiés', passed: hasFormatSpec, detail: hasFormatSpec ? 'Trouvés' : 'Non trouvés' },
+   670→        { label: 'Pas de greenwashing', passed: true, detail: 'Non vérifiable automatiquement' },
+   671→        { label: 'Feedback et itération prévus', passed: hasFeedback, detail: hasFeedback ? 'Trouvés' : 'Non trouvés' },
+   672→      ];
+   673→
+   674→  const passed = totalScore >= 22;
+   675→
+   676→  await db.validation.create({
+   677→    data: {
+   678→      sessionId,
+   679→      completeness,
+   680→      coherence,
+   681→      quality,
+   682→      totalScore,
+   683→      maxScore,
+   684→      checks: JSON.stringify(checks),
+   685→      passed,
+   686→    },
+   687→  });
+   688→
+   689→  return { completeness, coherence, quality, totalScore, maxScore, passed };
+   690→}

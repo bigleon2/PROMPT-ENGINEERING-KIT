@@ -1,0 +1,765 @@
+     1→"use client";
+     2→
+     3→import { useForm } from "react-hook-form";
+     4→import { z } from "zod/v4";
+     5→import { zodResolver } from "@hookform/resolvers/zod";
+     6→import {
+     7→  Form,
+     8→  FormControl,
+     9→  FormField,
+    10→  FormItem,
+    11→  FormLabel,
+    12→  FormMessage,
+    13→  FormDescription,
+    14→} from "@/components/ui/form";
+    15→import { Input } from "@/components/ui/input";
+    16→import { Textarea } from "@/components/ui/textarea";
+    17→import { Button } from "@/components/ui/button";
+    18→import { Checkbox } from "@/components/ui/checkbox";
+    19→import {
+    20→  Select,
+    21→  SelectContent,
+    22→  SelectItem,
+    23→  SelectTrigger,
+    24→  SelectValue,
+    25→} from "@/components/ui/select";
+    26→import {
+    27→  Card,
+    28→  CardContent,
+    29→  CardDescription,
+    30→  CardHeader,
+    31→  CardTitle,
+    32→} from "@/components/ui/card";
+    33→import { Badge } from "@/components/ui/badge";
+    34→import {
+    35→  Sparkles,
+    36→  FileText,
+    37→  Target,
+    38→  Shield,
+    39→  Lock,
+    40→  Info,
+    41→  Upload,
+    42→  ClipboardPaste,
+    43→  FileUp,
+    44→  X,
+    45→  CheckCircle2,
+    46→  AlertCircle,
+    47→} from "lucide-react";
+    48→import { useAppStore, BLOCK_CONFIGS, type BlockId } from "@/lib/store";
+    49→import { useCallback, useRef, useState } from "react";
+    50→import { toast } from "sonner";
+    51→
+    52→const sessionSchema = z.object({
+    53→  title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
+    54→  description: z.string().min(10, "La description doit contenir au moins 10 caractères"),
+    55→  sourceContent: z.string().min(20, "Le contenu source doit contenir au moins 20 caractères"),
+    56→  expectedResults: z.string().optional(),
+    57→  constraints: z.string().optional(),
+    58→  inputFormat: z.enum(["markdown", "json", "yaml", "code", "url", "pdf"]),
+    59→  complexity: z.enum(["simple", "moyen", "complexe"]),
+    60→  language: z.enum(["fr", "en"]),
+    61→});
+    62→
+    63→type SessionFormValues = z.infer<typeof sessionSchema>;
+    64→
+    65→async function pollStepStatus(sessionId: string): Promise<void> {
+    66→  for (let stepNum = 1; stepNum <= 7; stepNum++) {
+    67→    let attempts = 0;
+    68→    const maxAttempts = 60;
+    69→
+    70→    while (attempts < maxAttempts) {
+    71→      try {
+    72→        const res = await fetch(`/api/sessions/${sessionId}/steps/${stepNum}`);
+    73→        if (res.ok) {
+    74→          const data = await res.json();
+    75→          if (data.success && data.data) {
+    76→            const stepData = data.data;
+    77→
+    78→            useAppStore.getState().setSteps((prev) =>
+    79→              prev.map((s, i) => {
+    80→                if (i + 1 === stepNum) {
+    81→                  const newStatus = stepData.status === 'completed' ? 'done' as const
+    82→                    : stepData.status === 'running' ? 'active' as const
+    83→                    : stepData.status === 'error' ? 'error' as const
+    84→                    : s.status;
+    85→                  return {
+    86→                    ...s,
+    87→                    status: newStatus,
+    88→                    duration: stepData.duration || null,
+    89→                    output: stepData.output || undefined,
+    90→                  };
+    91→                }
+    92→                if (i + 1 === stepNum - 1 && stepData.status === 'running') {
+    93→                  return { ...s, status: 'done' as const };
+    94→                }
+    95→                return s;
+    96→              })
+    97→            );
+    98→
+    99→            if (stepData.status === 'completed' && stepData.output) {
+   100→              useAppStore.getState().setStepOutput(stepNum - 1, stepData.output);
+   101→            }
+   102→
+   103→            if (stepData.status === 'completed' || stepData.status === 'error') {
+   104→              break;
+   105→            }
+   106→          }
+   107→        }
+   108→      } catch {
+   109→        // retry
+   110→      }
+   111→      await new Promise((r) => setTimeout(r, 2000));
+   112→      attempts++;
+   113→    }
+   114→  }
+   115→}
+   116→
+   117→export function PekSessionForm() {
+   118→  const {
+   119→    selectedBlocks,
+   120→    toggleBlock,
+   121→    setIsGenerating,
+   122→    setActiveTab,
+   123→    setSteps,
+   124→    setCurrentStep,
+   125→    setStepOutput,
+   126→    resetPipeline,
+   127→    setCurrentSessionId,
+   128→    setSessions,
+   129→    setValidationScore,
+   130→    setValidationDetails,
+   131→  } = useAppStore();
+   132→
+   133→  const fileInputRef = useRef<HTMLInputElement>(null);
+   134→  const [isDragOver, setIsDragOver] = useState(false);
+   135→  const [isLoadingFile, setIsLoadingFile] = useState(false);
+   136→  const [loadedFileInfo, setLoadedFileInfo] = useState<{
+   137→    filename: string;
+   138→    lines: number;
+   139→    chars: number;
+   140→    format: string;
+   141→  } | null>(null);
+   142→
+   143→  const form = useForm<SessionFormValues>({
+   144→    resolver: zodResolver(sessionSchema),
+   145→    defaultValues: {
+   146→      title: "",
+   147→      description: "",
+   148→      sourceContent: "",
+   149→      expectedResults: "",
+   150→      constraints: "",
+   151→      inputFormat: "markdown",
+   152→      complexity: "moyen",
+   153→      language: "fr",
+   154→    },
+   155→  });
+   156→
+   157→  const handleFileLoad = useCallback(async (file: File) => {
+   158→    if (!file) return;
+   159→
+   160→    // Size check (client-side)
+   161→    if (file.size > 5 * 1024 * 1024) {
+   162→      toast.error("Fichier trop volumineux (max 5 Mo)");
+   163→      return;
+   164→    }
+   165→
+   166→    setIsLoadingFile(true);
+   167→    setLoadedFileInfo(null);
+   168→
+   169→    try {
+   170→      const formData = new FormData();
+   171→      formData.append("file", file);
+   172→
+   173→      const res = await fetch("/api/upload-source", {
+   174→        method: "POST",
+   175→        body: formData,
+   176→      });
+   177→
+   178→      const data = await res.json();
+   179→
+   180→      if (!data.success) {
+   181→        toast.error(data.error || "Erreur lors du chargement du fichier");
+   182→        return;
+   183→      }
+   184→
+   185→      // Inject content into form
+   186→      const content = data.data.content as string;
+   187→      form.setValue("sourceContent", content, { shouldValidate: true });
+   188→
+   189→      // Auto-detect format
+   190→      if (data.data.format && data.data.format !== "text") {
+   191→        form.setValue("inputFormat", data.data.format as SessionFormValues["inputFormat"], {
+   192→          shouldValidate: true,
+   193→        });
+   194→      }
+   195→
+   196→      setLoadedFileInfo({
+   197→        filename: data.data.filename,
+   198→        lines: data.data.lines,
+   199→        chars: data.data.chars,
+   200→        format: data.data.format,
+   201→      });
+   202→
+   203→      toast.success(
+   204→        `Fichier "${data.data.filename}" charge (${data.data.lines} lignes)`
+   205→      );
+   206→    } catch {
+   207→      toast.error("Erreur reseau lors du chargement");
+   208→    } finally {
+   209→      setIsLoadingFile(false);
+   210→    }
+   211→  }, [form]);
+   212→
+   213→  const handleDrop = useCallback(
+   214→    (e: React.DragEvent) => {
+   215→      e.preventDefault();
+   216→      e.stopPropagation();
+   217→      setIsDragOver(false);
+   218→
+   219→      const file = e.dataTransfer.files?.[0];
+   220→      if (file) handleFileLoad(file);
+   221→    },
+   222→    [handleFileLoad]
+   223→  );
+   224→
+   225→  const handleDragOver = useCallback((e: React.DragEvent) => {
+   226→    e.preventDefault();
+   227→    e.stopPropagation();
+   228→    setIsDragOver(true);
+   229→  }, []);
+   230→
+   231→  const handleDragLeave = useCallback((e: React.DragEvent) => {
+   232→    e.preventDefault();
+   233→    e.stopPropagation();
+   234→    setIsDragOver(false);
+   235→  }, []);
+   236→
+   237→  const handleFileInputChange = useCallback(
+   238→    (e: React.ChangeEvent<HTMLInputElement>) => {
+   239→      const file = e.target.files?.[0];
+   240→      if (file) handleFileLoad(file);
+   241→      // Reset input so same file can be re-selected
+   242→      e.target.value = "";
+   243→    },
+   244→    [handleFileLoad]
+   245→  );
+   246→
+   247→  const handlePaste = useCallback(
+   248→    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+   249→      const pastedText = e.clipboardData.getData("text");
+   250→      if (pastedText) {
+   251→        // Let the default paste happen, then ensure form validation triggers
+   252→        requestAnimationFrame(() => {
+   253→          const current = form.getValues("sourceContent");
+   254→          form.setValue("sourceContent", current, { shouldValidate: true });
+   255→        });
+   256→      }
+   257→    },
+   258→    [form]
+   259→  );
+   260→
+   261→  const clearLoadedFile = useCallback(() => {
+   262→    setLoadedFileInfo(null);
+   263→    form.setValue("sourceContent", "", { shouldValidate: true });
+   264→  }, [form]);
+   265→
+   266→  const onSubmit = useCallback(
+   267→    async (formData: SessionFormValues) => {
+   268→      if (selectedBlocks.length < 2) {
+   269→        toast.error("Selectionnez au moins 2 blocs pour generer un kit.");
+   270→        return;
+   271→      }
+   272→
+   273→      resetPipeline();
+   274→      setIsGenerating(true);
+   275→
+   276→      try {
+   277→        // 1. Create session via API
+   278→        const createRes = await fetch('/api/sessions', {
+   279→          method: 'POST',
+   280→          headers: { 'Content-Type': 'application/json' },
+   281→          body: JSON.stringify({
+   282→            title: formData.title,
+   283→            context: formData.description,
+   284→            sourceMaterial: formData.sourceContent,
+   285→            results: formData.expectedResults || '',
+   286→            constraints: formData.constraints || '',
+   287→            inputFormat: formData.inputFormat,
+   288→            selectedBlocks: selectedBlocks.join(','),
+   289→            complexity: formData.complexity,
+   290→            language: formData.language,
+   291→          }),
+   292→        });
+   293→
+   294→        const createData = await createRes.json();
+   295→        if (!createData.success || !createData.data?.id) {
+   296→          throw new Error(createData.error || 'Erreur de creation de session');
+   297→        }
+   298→
+   299→        const sessionId = createData.data.id;
+   300→        setCurrentSessionId(sessionId);
+   301→        toast.success('Session creee. Lancement du pipeline CoT...');
+   302→
+   303→        // 2. Start polling for step updates in background
+   304→        pollStepStatus(sessionId).then(() => {
+   305→          setIsGenerating(false);
+   306→        });
+   307→
+   308→        // 3. Execute the pipeline (non-blocking)
+   309→        fetch(`/api/sessions/${sessionId}/execute`, { method: 'POST' })
+   310→          .then((res) => res.json())
+   311→          .then((data) => {
+   312→            if (data.success) {
+   313→              // Load final validation
+   314→              setSteps((prev) =>
+   315→                prev.map((s) =>
+   316→                  s.status !== 'error' ? { ...s, status: 'done' as const } : s
+   317→                )
+   318→              );
+   319→              setCurrentStep(6);
+   320→              setIsGenerating(false);
+   321→
+   322→              // Set validation score
+   323→              if (data.data?.steps) {
+   324→                const validationStep = data.data.steps.find(
+   325→                  (s: { stepNumber: number }) => s.stepNumber === 6
+   326→                );
+   327→                if (validationStep?.output) {
+   328→                  const scoreMatch = validationStep.output.match(/(\d{1,2})\s*\/\s*25/);
+   329→                  if (scoreMatch) {
+   330→                    const score = parseInt(scoreMatch[1], 10);
+   331→                    setValidationScore(score);
+   332→                    setValidationDetails({
+   333→                      completeness: Math.min(10, Math.round(score * 0.4)),
+   334→                      coherence: Math.min(8, Math.round(score * 0.32)),
+   335→                      quality: Math.min(7, Math.round(score * 0.28)),
+   336→                      checks: [
+   337→                        { label: 'Blocs obligatoires presents', passed: score >= 15 },
+   338→                        { label: 'Chain-of-Thought respecte', passed: score >= 18 },
+   339→                        { label: 'Exemples multi-domaines', passed: score >= 20 },
+   340→                        { label: 'Cohérence interne', passed: score >= 16 },
+   341→                        { label: 'Qualite redactionnelle', passed: score >= 19 },
+   342→                        { label: 'Fidelite au projet source', passed: score >= 17 },
+   343→                        { label: 'Structuration PEK conforme', passed: score >= 20 },
+   344→                      ],
+   345→                    });
+   346→                  }
+   347→                }
+   348→              }
+   349→
+   350→              toast.success('Kit genere avec succes !');
+   351→              // Refresh sessions list
+   352→              fetch('/api/sessions').then((r) => r.json()).then((r) => {
+   353→                if (r.success) setSessions(r.data);
+   354→              });
+   355→            } else {
+   356→              toast.error('Erreur: ' + (data.error || 'Pipeline echoue'));
+   357→              setIsGenerating(false);
+   358→            }
+   359→          })
+   360→          .catch((err) => {
+   361→            toast.error('Erreur reseau: ' + err.message);
+   362→            setIsGenerating(false);
+   363→          });
+   364→      } catch (err) {
+   365→        toast.error(err instanceof Error ? err.message : 'Erreur inconnue');
+   366→        setIsGenerating(false);
+   367→      }
+   368→    },
+   369→    [selectedBlocks, resetPipeline, setIsGenerating, setCurrentSessionId, setSteps, setCurrentStep, setStepOutput, setSessions, setValidationScore, setValidationDetails]
+   370→  );
+   371→
+   372→  return (
+   373→    <div className="space-y-6">
+   374→      <div className="flex items-center gap-3">
+   375→        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600/10 text-amber-500">
+   376→          <Sparkles className="h-5 w-5" />
+   377→        </div>
+   378→        <div>
+   379→          <h2 className="text-lg font-semibold">Nouvelle Session</h2>
+   380→          <p className="text-sm text-muted-foreground">
+   381→            Configurez votre session et lancez l&apos;analyse CoT
+   382→          </p>
+   383→        </div>
+   384→      </div>
+   385→
+   386→      <Form {...form}>
+   387→        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+   388→          {/* Basic Info Card */}
+   389→          <Card>
+   390→            <CardHeader className="pb-4">
+   391→              <CardTitle className="text-base flex items-center gap-2">
+   392→                <FileText className="h-4 w-4 text-amber-500" />
+   393→                Informations de base
+   394→              </CardTitle>
+   395→              <CardDescription>
+   396→                Decrivez votre projet et le contexte de votre kit
+   397→              </CardDescription>
+   398→            </CardHeader>
+   399→            <CardContent className="space-y-4">
+   400→              <FormField
+   401→                control={form.control}
+   402→                name="title"
+   403→                render={({ field }) => (
+   404→                  <FormItem>
+   405→                    <FormLabel>Titre du projet</FormLabel>
+   406→                    <FormControl>
+   407→                      <Input
+   408→                        placeholder="Ex: Kit Agent de Support Client"
+   409→                        {...field}
+   410→                      />
+   411→                    </FormControl>
+   412→                    <FormMessage />
+   413→                  </FormItem>
+   414→                )}
+   415→              />
+   416→
+   417→              <FormField
+   418→                control={form.control}
+   419→                name="description"
+   420→                render={({ field }) => (
+   421→                  <FormItem>
+   422→                    <FormLabel>Description du contexte</FormLabel>
+   423→                    <FormControl>
+   424→                      <Textarea
+   425→                        placeholder="Decrivez le contexte global de votre projet et les objectifs du kit..."
+   426→                        className="min-h-[80px] resize-y"
+   427→                        {...field}
+   428→                      />
+   429→                    </FormControl>
+   430→                    <FormMessage />
+   431→                  </FormItem>
+   432→                )}
+   433→              />
+   434→
+   435→              {/* Source Content with File Upload */}
+   436→              <FormField
+   437→                control={form.control}
+   438→                name="sourceContent"
+   439→                render={({ field }) => (
+   440→                  <FormItem>
+   441→                    <FormLabel>Contenu source du projet</FormLabel>
+   442→                    <FormControl>
+   443→                      <div className="space-y-2">
+   444→                        {/* Action buttons row */}
+   445→                        <div className="flex items-center gap-2">
+   446→                          <Button
+   447→                            type="button"
+   448→                            variant="outline"
+   449→                            size="sm"
+   450→                            className="border-amber-500/30 text-amber-500 hover:bg-amber-500/5"
+   451→                            onClick={() => fileInputRef.current?.click()}
+   452→                            disabled={isLoadingFile}
+   453→                          >
+   454→                            <Upload className="mr-1.5 h-3.5 w-3.5" />
+   455→                            Parcourir
+   456→                          </Button>
+   457→                          <p className="text-xs text-muted-foreground">
+   458→                            ou glissez-deposez un fichier ci-dessous, ou collez directement (Ctrl+V)
+   459→                          </p>
+   460→                        </div>
+   461→
+   462→                        {/* Hidden file input */}
+   463→                        <input
+   464→                          ref={fileInputRef}
+   465→                          type="file"
+   466→                          accept=".txt,.md,.markdown,.json,.yaml,.yml,.js,.ts,.tsx,.jsx,.py,.rb,.go,.rs,.java,.c,.cpp,.h,.hpp,.cs,.php,.html,.css,.scss,.xml,.sql,.sh,.toml,.ini,.csv,.log,.vue,.svelte,.astro"
+   467→                          className="hidden"
+   468→                          onChange={handleFileInputChange}
+   469→                        />
+   470→
+   471→                        {/* Dropzone area */}
+   472→                        <div
+   473→                          onDrop={handleDrop}
+   474→                          onDragOver={handleDragOver}
+   475→                          onDragLeave={handleDragLeave}
+   476→                          className={`relative rounded-lg border-2 border-dashed transition-all ${
+   477→                            isDragOver
+   478→                              ? "border-amber-500 bg-amber-500/5"
+   479→                              : "border-border hover:border-amber-500/30"
+   480→                          }`}
+   481→                        >
+   482→                          {/* Loading overlay */}
+   483→                          {isLoadingFile && (
+   484→                            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm">
+   485→                              <div className="flex items-center gap-2 text-sm text-amber-500">
+   486→                                <FileUp className="h-4 w-4 animate-bounce" />
+   487→                                <span>Chargement du fichier...</span>
+   488→                              </div>
+   489→                            </div>
+   490→                          )}
+   491→
+   492→                          {/* Loaded file info banner */}
+   493→                          {loadedFileInfo && !isLoadingFile && (
+   494→                            <div className="flex items-center justify-between px-3 py-2 bg-amber-500/5 border-b border-amber-500/10">
+   495→                              <div className="flex items-center gap-2 min-w-0">
+   496→                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+   497→                                <span className="text-xs font-medium truncate">
+   498→                                  {loadedFileInfo.filename}
+   499→                                </span>
+   500→                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-500/30 text-amber-500 shrink-0">
+   501→                                  {loadedFileInfo.format}
+   502→                                </Badge>
+   503→                                <span className="text-[11px] text-muted-foreground shrink-0">
+   504→                                  {loadedFileInfo.lines} lignes &middot; {(loadedFileInfo.chars / 1024).toFixed(1)} Ko
+   505→                                </span>
+   506→                              </div>
+   507→                              <button
+   508→                                type="button"
+   509→                                onClick={clearLoadedFile}
+   510→                                className="p-1 rounded hover:bg-muted transition-colors shrink-0"
+   511→                                title="Supprimer le contenu"
+   512→                              >
+   513→                                <X className="h-3.5 w-3.5 text-muted-foreground" />
+   514→                              </button>
+   515→                            </div>
+   516→                          )}
+   517→
+   518→                          {/* Textarea */}
+   519→                          <Textarea
+   520→                            placeholder="Collez ici le contenu source (Ctrl+V), glissez un fichier, ou cliquez Parcourir pour selectionner un fichier de votre ordinateur..."
+   521→                            className="min-h-[200px] resize-y border-0 rounded-lg focus-visible:ring-0 shadow-none"
+   522→                            onPaste={handlePaste}
+   523→                            {...field}
+   524→                          />
+   525→                        </div>
+   526→                      </div>
+   527→                    </FormControl>
+   528→                    <FormDescription>
+   529→                      Le contenu source sera analyse par le pipeline CoT pour extraire les informations cles.
+   530→                      Formats acceptes : TXT, MD, JSON, YAML, code source, etc. (max 5 Mo).
+   531→                    </FormDescription>
+   532→                    <FormMessage />
+   533→                  </FormItem>
+   534→                )}
+   535→              />
+   536→            </CardContent>
+   537→          </Card>
+   538→
+   539→          {/* Expectations & Constraints Card */}
+   540→          <Card>
+   541→            <CardHeader className="pb-4">
+   542→              <CardTitle className="text-base flex items-center gap-2">
+   543→                <Target className="h-4 w-4 text-amber-500" />
+   544→                Resultats & Contraintes
+   545→              </CardTitle>
+   546→            </CardHeader>
+   547→            <CardContent className="space-y-4">
+   548→              <FormField
+   549→                control={form.control}
+   550→                name="expectedResults"
+   551→                render={({ field }) => (
+   552→                  <FormItem>
+   553→                    <FormLabel>Resultats attendus</FormLabel>
+   554→                    <FormControl>
+   555→                      <Textarea
+   556→                        placeholder="Decrivez les resultats et livrables attendus du kit..."
+   557→                        className="min-h-[80px] resize-y"
+   558→                        {...field}
+   559→                      />
+   560→                    </FormControl>
+   561→                    <FormMessage />
+   562→                  </FormItem>
+   563→                )}
+   564→              />
+   565→
+   566→              <FormField
+   567→                control={form.control}
+   568→                name="constraints"
+   569→                render={({ field }) => (
+   570→                  <FormItem>
+   571→                    <FormLabel>Contraintes</FormLabel>
+   572→                    <FormControl>
+   573→                      <Textarea
+   574→                        placeholder="Contraintes techniques, limites, exigences specifiques..."
+   575→                        className="min-h-[80px] resize-y"
+   576→                        {...field}
+   577→                      />
+   578→                    </FormControl>
+   579→                    <FormMessage />
+   580→                  </FormItem>
+   581→                )}
+   582→              />
+   583→            </CardContent>
+   584→          </Card>
+   585→
+   586→          {/* Configuration Card */}
+   587→          <Card>
+   588→            <CardHeader className="pb-4">
+   589→              <CardTitle className="text-base flex items-center gap-2">
+   590→                <Shield className="h-4 w-4 text-amber-500" />
+   591→                Configuration
+   592→              </CardTitle>
+   593→            </CardHeader>
+   594→            <CardContent className="space-y-4">
+   595→              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+   596→                <FormField
+   597→                  control={form.control}
+   598→                  name="inputFormat"
+   599→                  render={({ field }) => (
+   600→                    <FormItem>
+   601→                      <FormLabel>Format d&apos;entree</FormLabel>
+   602→                      <Select
+   603→                        onValueChange={field.onChange}
+   604→                        defaultValue={field.value}
+   605→                      >
+   606→                        <FormControl>
+   607→                          <SelectTrigger>
+   608→                            <SelectValue />
+   609→                          </SelectTrigger>
+   610→                        </FormControl>
+   611→                        <SelectContent>
+   612→                          <SelectItem value="markdown">Markdown</SelectItem>
+   613→                          <SelectItem value="json">JSON</SelectItem>
+   614→                          <SelectItem value="yaml">YAML</SelectItem>
+   615→                          <SelectItem value="code">Code</SelectItem>
+   616→                          <SelectItem value="url">URL</SelectItem>
+   617→                          <SelectItem value="pdf">PDF</SelectItem>
+   618→                        </SelectContent>
+   619→                      </Select>
+   620→                      <FormMessage />
+   621→                    </FormItem>
+   622→                  )}
+   623→                />
+   624→
+   625→                <FormField
+   626→                  control={form.control}
+   627→                  name="complexity"
+   628→                  render={({ field }) => (
+   629→                    <FormItem>
+   630→                      <FormLabel>Complexite</FormLabel>
+   631→                      <Select
+   632→                        onValueChange={field.onChange}
+   633→                        defaultValue={field.value}
+   634→                      >
+   635→                        <FormControl>
+   636→                          <SelectTrigger>
+   637→                            <SelectValue />
+   638→                          </SelectTrigger>
+   639→                        </FormControl>
+   640→                        <SelectContent>
+   641→                          <SelectItem value="simple">Simple</SelectItem>
+   642→                          <SelectItem value="moyen">Moyen</SelectItem>
+   643→                          <SelectItem value="complexe">Complexe</SelectItem>
+   644→                        </SelectContent>
+   645→                      </Select>
+   646→                      <FormMessage />
+   647→                    </FormItem>
+   648→                  )}
+   649→                />
+   650→
+   651→                <FormField
+   652→                  control={form.control}
+   653→                  name="language"
+   654→                  render={({ field }) => (
+   655→                    <FormItem>
+   656→                      <FormLabel>Langue</FormLabel>
+   657→                      <Select
+   658→                        onValueChange={field.onChange}
+   659→                        defaultValue={field.value}
+   660→                      >
+   661→                        <FormControl>
+   662→                          <SelectTrigger>
+   663→                            <SelectValue />
+   664→                          </SelectTrigger>
+   665→                        </FormControl>
+   666→                        <SelectContent>
+   667→                          <SelectItem value="fr">Francais</SelectItem>
+   668→                          <SelectItem value="en">English</SelectItem>
+   669→                        </SelectContent>
+   670→                      </Select>
+   671→                      <FormMessage />
+   672→                    </FormItem>
+   673→                  )}
+   674→                />
+   675→              </div>
+   676→            </CardContent>
+   677→          </Card>
+   678→
+   679→          {/* Blocks Selection Card */}
+   680→          <Card>
+   681→            <CardHeader className="pb-4">
+   682→              <CardTitle className="text-base flex items-center gap-2">
+   683→                <Lock className="h-4 w-4 text-amber-500" />
+   684→                Selection des Blocs
+   685→              </CardTitle>
+   686→              <CardDescription>
+   687→                Choisissez les blocs a inclure dans votre kit.{" "}
+   688→                <Badge variant="secondary" className="ml-1">
+   689→                  {selectedBlocks.length} selectionne{selectedBlocks.length > 1 ? "s" : ""}
+   690→                </Badge>
+   691→              </CardDescription>
+   692→            </CardHeader>
+   693→            <CardContent>
+   694→              <div className="grid gap-3 sm:grid-cols-2">
+   695→                {BLOCK_CONFIGS.map((block) => {
+   696→                  const isSelected = selectedBlocks.includes(block.id);
+   697→                  return (
+   698→                    <label
+   699→                      key={block.id}
+   700→                      className={
+   701→                        "flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all hover:bg-muted/50 " +
+   702→                        (isSelected
+   703→                          ? "border-amber-500/50 bg-amber-500/5"
+   704→                          : "border-border")
+   705→                      }
+   706→                    >
+   707→                      <Checkbox
+   708→                        checked={isSelected}
+   709→                        onCheckedChange={() => toggleBlock(block.id)}
+   710→                        className="mt-0.5"
+   711→                        disabled={block.required}
+   712→                      />
+   713→                      <div className="flex-1 min-w-0">
+   714→                        <div className="flex items-center gap-2">
+   715→                          <span className="text-sm font-medium">
+   716→                            {block.id}. {block.name}
+   717→                          </span>
+   718→                          {block.required && (
+   719→                            <Badge
+   720→                              variant="outline"
+   721→                              className="text-[10px] px-1.5 py-0 h-4 border-amber-500/30 text-amber-500"
+   722→                            >
+   723→                              Obligatoire
+   724→                            </Badge>
+   725→                          )}
+   726→                          {block.recommended && !block.required && (
+   727→                            <Badge
+   728→                              variant="outline"
+   729→                              className="text-[10px] px-1.5 py-0 h-4 border-emerald-500/30 text-emerald-500"
+   730→                            >
+   731→                              Recommande
+   732→                            </Badge>
+   733→                          )}
+   734→                        </div>
+   735→                        <p className="text-xs text-muted-foreground mt-1">
+   736→                          {block.description}
+   737→                        </p>
+   738→                      </div>
+   739→                    </label>
+   740→                  );
+   741→                })}
+   742→              </div>
+   743→            </CardContent>
+   744→          </Card>
+   745→
+   746→          {/* Submit */}
+   747→          <div className="flex items-center gap-3">
+   748→            <Button
+   749→              type="submit"
+   750→              size="lg"
+   751→              className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20 transition-all"
+   752→            >
+   753→              <Sparkles className="mr-2 h-4 w-4" />
+   754→              Lancer l&apos;analyse CoT
+   755→            </Button>
+   756→            <p className="text-xs text-muted-foreground flex items-center gap-1">
+   757→              <Info className="h-3 w-3" />
+   758→              Le pipeline executera les 7 etapes Chain-of-Thought automatiquement
+   759→            </p>
+   760→          </div>
+   761→        </form>
+   762→      </Form>
+   763→    </div>
+   764→  );
+   765→}

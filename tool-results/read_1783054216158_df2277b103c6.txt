@@ -1,0 +1,926 @@
+     1→# Inventaire des Skills installés
+     2→
+     3→> Fichier généré automatiquement le 2026-06-21 01:35 UTC
+     4→> Total : **69 skills** répartis en **12 catégories**
+     5→> Source : `/home/z/my-project/skills/`
+     6→
+     7→---
+     8→
+     9→## Sommaire
+    10→
+    11→- [Autres](#autres) (2)
+    12→- [Carrière & Emploi](#carrière--emploi) (4)
+    13→- [Contenu & Marketing](#contenu--marketing) (6)
+    14→- [Documents & Contenu](#documents--contenu) (5)
+    15→- [Développement](#développement) (3)
+    16→- [Finance & Recherche](#finance--recherche) (7)
+    17→- [IA & Media](#ia--media) (12)
+    18→- [Lifestyle & Bien-être](#lifestyle--bien-être) (5)
+    19→- [Méta (Skills & Plans)](#méta-skills--plans) (6)
+    20→- [Visualisation & Design](#visualisation--design) (5)
+    21→- [Web & Recherche](#web--recherche) (6)
+    22→- [Éducation](#éducation) (8)
+    23→
+    24→---
+    25→
+    26→## Autres
+    27→
+    28→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    29→|---|---|---|---|---|---|---|
+    30→| `auto-target-tracker` | v— | — | 2026-03-18 | 7.7 KB | 317 | 自动目标进度追踪器。在对话中检测到目标相关图片（笔记、进度、截图、记录）时，自动调用 VLM 识别关键信息并记录到目标日记。适用于学习管理、健身追踪、工作进度、习惯养成、创作记录等所有目标管理场景。 |
+    31→| `gen-plan` | v1.0.0 | — | 2026-06-21 | 19.9 KB | 463 | > |
+    32→
+    33→## Carrière & Emploi
+    34→
+    35→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    36→|---|---|---|---|---|---|---|
+    37→| `interview-prep` | v— | — | 2026-05-07 | 5.5 KB | 131 | 帮用户准备面试。基于目标 JD、公司、岗位方向，生成"高频面试题 + 参考回答 + 行为面 / 技术面 / Case 面分类题库"，并产出可打印的『面试备战手册』。当用户说"帮我准备面试""明天有面… |
+    38→| `jd-resume-tailor` | v— | — | 2026-05-07 | 5.5 KB | 127 | 给定一份 JD 和一份现有简历，做"JD 拆解 + 简历定向改写"。拆 JD 抽出硬技能、软技能、加分项；对照简历做 gap 分析；产出针对该岗位重写后的简历，突出相关经验、补齐关键词缺口、并保留候… |
+    39→| `job-intent-tracker` | v— | — | 2026-05-07 | 6.5 KB | 136 | 帮助用户梳理求职意向、生成目标岗位画像，并维护一份结构化的"岗位投递追踪表"。当用户说"我想换工作 / 不知道投什么岗 / 帮我看看我适合什么岗位 / 帮我管理投递进度 / 我投了好几家但记不住状态… |
+    40→| `resume-builder` | v— | — | 2026-05-07 | 5.5 KB | 133 | 从零生成或全面优化一份中文简历，并导出 docx / pdf / markdown 多种格式。用 STAR 法则改写经历、做 ATS 关键词覆盖率检查、根据行业（互联网产品 / 技术 / 金融 / … |
+    41→
+    42→## Contenu & Marketing
+    43→
+    44→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    45→|---|---|---|---|---|---|---|
+    46→| `blog-writer` | v0.1.0 | — | 2026-03-10 | 6.8 KB | 158 | This skill should be used when writing blog posts, articles, or long-form content in the writer's d… |
+    47→| `content-strategy` | v0.1.0 | — | 2026-03-10 | 9.1 KB | 181 | Build and execute a content marketing strategy for a solopreneur business. Use when planning what c… |
+    48→| `contentanalysis` | v— | — | 2026-03-13 | 564 B | 14 | Content extraction and analysis — wisdom extraction from videos, podcasts, articles, and YouTube. U… |
+    49→| `marketing-mode` | v1.0.0 | — | 1979-12-31 | 17.7 KB | 693 | Marketing Mode combines 23 comprehensive marketing skills covering strategy, psychology, content, S… |
+    50→| `seo-content-writer` | v2.0.0 | — | 2026-03-10 | 23.4 KB | 661 | Use when the user asks to "write SEO content", "create a blog post", "write an article", "content w… |
+    51→| `storyboard-manager` | v— | — | 2026-03-13 | 18.1 KB | 532 | Assist writers with story planning, character development, plot structuring, chapter writing, timel… |
+    52→
+    53→## Documents & Contenu
+    54→
+    55→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    56→|---|---|---|---|---|---|---|
+    57→| `cheat-sheet` | v— | — | 2026-05-26 | 5.9 KB | 210 | 将 PDF/Word/Markdown 学习资料转化为精炼的知识浓缩卡文档。支持三种风格（知识点速查卡/思维导图式/Q&A式），输出双栏小字 PDF。当用户说"生成知识浓缩卡"、"生成 Cheats… |
+    58→| `docx` | v1.0 | — | 2026-04-13 | 11.7 KB | 201 | Comprehensive document creation, editing, and analysis with support for tracked changes, comments, … |
+    59→| `pdf` | v1.0 | — | 2026-06-02 | 56.7 KB | 879 | Professional PDF toolkit with four production lines:(1) Report - structured documents via ReportLab… |
+    60→| `pptx` | v1.0 | — | 2026-06-15 | 37.8 KB | 512 | Presentation creation, editing, and analysis for .pptx files: (1) Creating new presentations, (2) M… |
+    61→| `xlsx` | v1.0 | — | 2026-04-10 | 10.2 KB | 230 | Use this skill any time a spreadsheet file is the primary input or output. This means any task wher… |
+    62→
+    63→## Développement
+    64→
+    65→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    66→|---|---|---|---|---|---|---|
+    67→| `coding-agent` | v1.0.4 | — | 2026-03-18 | 3.1 KB | 120 | Coding workflow with planning, implementation, verification, and testing for clean software develop… |
+    68→| `fullstack-dev` | v— | — | 2026-06-18 | 11.5 KB | 238 | Fullstack web development with Next.js 16, TypeScript, Tailwind CSS 4, shadcn/ui, Prisma ORM. Use w… |
+    69→| `version-management` | v— | — | 2026-06-10 | 29.4 KB | 575 | 独立通用 Skill：管理前端项目全生命周期。只要任务**可能**写出 .html/.jsx/.tsx/.vue 入口文件，就必须在写出第一个文件**之前**读取并遵循本 Skill（用于确定落盘路… |
+    70→
+    71→## Finance & Recherche
+    72→
+    73→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    74→|---|---|---|---|---|---|---|
+    75→| `ai-news-collectors` | v1.0.0 | — | 1979-12-31 | 5.2 KB | 157 | AI 新闻聚合与热度排序工具。当用户询问 AI 领域最新动态时触发，如："今天有什么 AI 新闻？""总结一下这周的 AI 动态""最近有什么火的 AI 产品？""AI 圈最近在讨论什么？"。覆盖：… |
+    76→| `aminer-academic-search` | v— | — | 2026-04-22 | 5.3 KB | 157 | > |
+    77→| `aminer-daily-paper` | v— | — | 2026-04-21 | 2.7 KB | 75 | Get personalized academic paper recommendations. Activate whenever the user asks for paper recommen… |
+    78→| `aminer-free-academic` | v1.1.1 | — | 2026-04-22 | 10.3 KB | 363 | > |
+    79→| `finance` | v— | — | 2026-02-03 | 2.4 KB | 53 | Comprehensive Finance API integration skill for real-time and historical financial data analysis, m… |
+    80→| `market-research-reports` | v— | — | 2026-03-13 | 28.0 KB | 901 | Generate comprehensive market research reports (50+ pages) in the style of top consulting firms (Mc… |
+    81→| `stock-analysis-skill` | v— | — | 2026-03-20 | 5.4 KB | 156 | Comprehensive stock market analysis skill covering A-share (China), Hong Kong, and US equities. Pri… |
+    82→
+    83→## IA & Media
+    84→
+    85→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+    86→|---|---|---|---|---|---|---|
+    87→| `ASR` | v— | — | 2025-12-21 | 15.1 KB | 580 | Implement speech-to-text (ASR/automatic speech recognition) capabilities using the z-ai-web-dev-sdk… |
+    88→| `image-edit` | v— | — | 2026-01-26 | 24.2 KB | 896 | Implement AI image editing and modification capabilities using the z-ai-web-dev-sdk. Use this skill… |
+    89→| `image-generation` | v— | — | 2025-12-21 | 14.8 KB | 583 | Implement AI image generation capabilities using the z-ai-web-dev-sdk. Use this skill when the user… |
+    90→| `image-search` | v1.0.0 | — | 2026-05-16 | 6.6 KB | 163 | | |
+    91→| `image-understand` | v— | — | 2026-01-23 | 21.9 KB | 855 | Implement specialized image understanding capabilities using the z-ai-web-dev-sdk. Use this skill w… |
+    92→| `LLM` | v— | — | 2025-12-21 | 21.4 KB | 856 | Implement large language model (LLM) chat completions using the z-ai-web-dev-sdk. Use this skill wh… |
+    93→| `pdf-llm` | v— | — | 2026-06-21 | 18.1 KB | 423 | > |
+    94→| `podcast-generate` | v— | — | 2026-02-11 | 5.4 KB | 198 | Generate podcast episodes from user-provided content or by searching the web for specified topics. … |
+    95→| `TTS` | v— | — | 2025-12-22 | 19.6 KB | 735 | Implement text-to-speech (TTS) capabilities using the z-ai-web-dev-sdk. Use this skill when the use… |
+    96→| `video-generation` | v— | — | 2026-01-04 | 29.1 KB | 1082 | Implement AI-powered video generation capabilities using the z-ai-web-dev-sdk. Use this skill when … |
+    97→| `video-understand` | v— | — | 2026-01-23 | 24.3 KB | 916 | Implement specialized video understanding capabilities using the z-ai-web-dev-sdk. Use this skill w… |
+    98→| `VLM` | v— | — | 2025-12-19 | 14.0 KB | 588 | Implement vision-based AI chat capabilities using the z-ai-web-dev-sdk. Use this skill when the use… |
+    99→
+   100→## Lifestyle & Bien-être
+   101→
+   102→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+   103→|---|---|---|---|---|---|---|
+   104→| `anti-pua` | v— | — | 2026-04-13 | 9.3 KB | 245 | 识别和分析PUA（Pickup Artist）及情感操纵行为的专业心理分析工具。具备人格分析、心理侧写、情感分析能力，能够识别情感操纵、煤气灯操纵、虐待等有毒关系模式，评估人格特质（如黑暗三人格、脆… |
+   105→| `dream-interpreter` | v— | — | 2026-03-18 | 2.9 KB | 88 | AI 解梦大师。用户描述梦境，智能追问关键细节后，从三个视角（周公解梦/心理分析/赛博神棍）生成解读，输出结构化 JSON 供前端渲染"梦境解析卡"。 |
+   106→| `get-fortune-analysis` | v— | — | 2026-06-21 | 16.6 KB | 370 | Fortune report / 命理分析 / 八字解析生成器 — 输入生辰即刻产出流年金象风格视觉运势报告，职场·财运·情感多维度深度解读。支持中英文触发：命理分析、运势报告、fortune re… |
+   107→| `gift-evaluator` | v— | — | 2026-02-13 | 4.7 KB | 83 | The PRIMARY tool for Spring Festival gift analysis and social interaction generation. Use this skil… |
+   108→| `mindfulness-meditation` | v1.0.0 | — | 1979-12-31 | 3.0 KB | 65 | Build a meditation practice with guided sessions, streaks, and mindfulness reminders |
+   109→
+   110→## Méta (Skills & Plans)
+   111→
+   112→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+   113→|---|---|---|---|---|---|---|
+   114→| `correct-work` | v1.0.0 | verify-work | 2026-06-21 | 9.0 KB | 225 | > |
+   115→| `skill-creator` | v— | — | 2026-03-14 | 32.3 KB | 485 | Create new skills, modify and improve existing skills, and measure skill performance. Use when user… |
+   116→| `skill-finder-cn` | v1.0.0 | — | 1979-12-31 | 1.2 KB | 66 | Skill 查找器 | Skill Finder. 帮助发现和安装 ClawHub Skills | Discover and install ClawHub Skills. 回答'有什么技能可以X… |
+   117→| `skills-inventory` | v— | — | 2026-06-21 | 5.1 KB | 135 | > |
+   118→| `task-review` | v— | — | 2026-05-21 | 1.9 KB | 49 | 当用户指令为高复杂度任务时触发，用于将刚完成的任务路径保存为可复用技能，生成相关的SKILL.md文档。 |
+   119→| `writing-plans` | v0.1.0 | — | 2026-03-10 | 3.2 KB | 116 | Use when you have a spec or requirements for a multi-step task, before touching code |
+   120→
+   121→## Visualisation & Design
+   122→
+   123→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+   124→|---|---|---|---|---|---|---|
+   125→| `charts` | v1.0 | — | 2026-04-08 | 22.1 KB | 427 | > |
+   126→| `design` | v— | — | 2026-06-08 | 40.9 KB | 593 | Route design-related HTML artifact tasks to the right artifact skill, reference, design system gene… |
+   127→| `interview-designer` | v1.0.0 | — | 2026-03-10 | 3.7 KB | 53 | Analyze resumes and design interview strategies using evidence-based methodology. Transforms interv… |
+   128→| `ui-ux-pro-max` | v0.1.0 | — | 2026-03-10 | 2.6 KB | 43 | UI/UX design intelligence and implementation guidance for building polished interfaces. Use when th… |
+   129→| `visual-design-foundations` | v— | — | 2026-03-13 | 7.0 KB | 318 | Apply typography, color theory, spacing systems, and iconography principles to create cohesive visu… |
+   130→
+   131→## Web & Recherche
+   132→
+   133→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+   134→|---|---|---|---|---|---|---|
+   135→| `agent-browser` | v— | — | 1979-12-31 | 10.0 KB | 328 | A fast Rust-based headless browser automation CLI with Node.js fallback that enables AI agents to n… |
+   136→| `multi-search-engine` | v2.0.1 | — | 2026-03-14 | 2.5 KB | 78 | Multi search engine integration with 8 domestic (CN) search engines. Supports advanced search opera… |
+   137→| `qingyan-research` | v— | — | 2026-03-16 | 11.8 KB | 294 | Deep web research and HTML report generation. When GLM needs to conduct systematic information gath… |
+   138→| `web-reader` | v— | — | 2025-12-19 | 27.7 KB | 1140 | Implement web page content extraction capabilities using the z-ai-web-dev-sdk. Use this skill when … |
+   139→| `web-search` | v— | — | 2026-01-23 | 22.0 KB | 912 | Implement web search capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to… |
+   140→| `web-shader-extractor` | v— | — | 2026-03-30 | 6.1 KB | 145 | | |
+   141→
+   142→## Éducation
+   143→
+   144→| Nom | Version | AKA | Date | Taille | Lignes | Description courte |
+   145→|---|---|---|---|---|---|---|
+   146→| `gaokao-collect-student-info` | v— | — | 2026-06-16 | 5.4 KB | 105 | >- |
+   147→| `gaokao-fetch-volunteers` | v— | — | 2026-06-10 | 3.6 KB | 110 | >- |
+   148→| `gaokao-generate-report` | v— | — | 2026-06-10 | 2.0 KB | 69 | >- |
+   149→| `gaokao-recommend-majors` | v— | — | 2026-06-10 | 2.4 KB | 66 | >- |
+   150→| `gaokao-recommend-schools` | v— | — | 2026-06-10 | 2.3 KB | 68 | >- |
+   151→| `quiz-html` | v0.1.0 | — | 2026-05-18 | 7.8 KB | 191 | 把题目数组生成一个**可独立运行的网页练习页**（HTML 文件）。当用户完成 quiz-mastery 的「从资料出题」或「从文件提取题目」流程后，应主动询问是否需要"在网页里练习"，确认后调用本… |
+   152→| `quiz-mastery` | v0.2.0 | — | 2026-05-22 | 9.1 KB | 212 | 出题、测验、复习、掌握度追踪工具。**用户说"复习"、"巩固"、"回顾"任一关键词时优先触发本 skill**。当用户的请求与"题目/复习"相关时触发：把学习资料/PDF/材料转成题目练习（"给这个… |
+   153→| `study-buddy` | v— | — | 2026-06-01 | 29.4 KB | 525 | 智能督学助手，管理用户的长期学习项目工作流。当用户表达学习项目相关意图时触发：创建/制定学习计划（"我想学X"、"帮我制定计划"）、汇报学习进度（"学完了"、"今天搞定了"、"完成今日任务"）、查询… |
+   154→
+   155→---
+   156→
+   157→## Détails des skills
+   158→
+   159→### `auto-target-tracker` v—
+   160→
+   161→- **Chemin** : `skills/auto-target-tracker/SKILL.md`
+   162→- **Date** : 2026-03-18
+   163→- **AKA** : —
+   164→- **Taille** : 7.7 KB (317 lignes)
+   165→
+   166→**Description** :
+   167→
+   168→> 自动目标进度追踪器。在对话中检测到目标相关图片（笔记、进度、截图、记录）时，自动调用 VLM 识别关键信息并记录到目标日记。适用于学习管理、健身追踪、工作进度、习惯养成、创作记录等所有目标管理场景。
+   169→
+   170→### `gen-plan` v1.0.0
+   171→
+   172→- **Chemin** : `skills/gen-plan/SKILL.md`
+   173→- **Date** : 2026-06-21
+   174→- **AKA** : —
+   175→- **Taille** : 19.9 KB (463 lignes)
+   176→
+   177→**Description** :
+   178→
+   179→> >
+   180→
+   181→### `interview-prep` v—
+   182→
+   183→- **Chemin** : `skills/interview-prep/SKILL.md`
+   184→- **Date** : 2026-05-07
+   185→- **AKA** : —
+   186→- **Taille** : 5.5 KB (131 lignes)
+   187→
+   188→**Description** :
+   189→
+   190→> 帮用户准备面试。基于目标 JD、公司、岗位方向，生成"高频面试题 + 参考回答 + 行为面 / 技术面 / Case 面分类题库"，并产出可打印的『面试备战手册』。当用户说"帮我准备面试""明天有面试 / 后天面试""面试题""面经""模…
+   191→
+   192→### `jd-resume-tailor` v—
+   193→
+   194→- **Chemin** : `skills/jd-resume-tailor/SKILL.md`
+   195→- **Date** : 2026-05-07
+   196→- **AKA** : —
+   197→- **Taille** : 5.5 KB (127 lignes)
+   198→
+   199→**Description** :
+   200→
+   201→> 给定一份 JD 和一份现有简历，做"JD 拆解 + 简历定向改写"。拆 JD 抽出硬技能、软技能、加分项；对照简历做 gap 分析；产出针对该岗位重写后的简历，突出相关经验、补齐关键词缺口、并保留候选人真实经历不编造。当用户说"针对这个岗…
+   202→
+   203→### `job-intent-tracker` v—
+   204→
+   205→- **Chemin** : `skills/job-intent-tracker/SKILL.md`
+   206→- **Date** : 2026-05-07
+   207→- **AKA** : —
+   208→- **Taille** : 6.5 KB (136 lignes)
+   209→
+   210→**Description** :
+   211→
+   212→> 帮助用户梳理求职意向、生成目标岗位画像，并维护一份结构化的"岗位投递追踪表"。当用户说"我想换工作 / 不知道投什么岗 / 帮我看看我适合什么岗位 / 帮我管理投递进度 / 我投了好几家但记不住状态了 / 想做一个求职 OKR / 整理一…
+   213→
+   214→### `resume-builder` v—
+   215→
+   216→- **Chemin** : `skills/resume-builder/SKILL.md`
+   217→- **Date** : 2026-05-07
+   218→- **AKA** : —
+   219→- **Taille** : 5.5 KB (133 lignes)
+   220→
+   221→**Description** :
+   222→
+   223→> 从零生成或全面优化一份中文简历，并导出 docx / pdf / markdown 多种格式。用 STAR 法则改写经历、做 ATS 关键词覆盖率检查、根据行业（互联网产品 / 技术 / 金融 / 通用）选模板。当用户说"帮我写简历 / …
+   224→
+   225→### `blog-writer` v0.1.0
+   226→
+   227→- **Chemin** : `skills/blog-writer/SKILL.md`
+   228→- **Date** : 2026-03-10
+   229→- **AKA** : —
+   230→- **Taille** : 6.8 KB (158 lignes)
+   231→
+   232→**Description** :
+   233→
+   234→> This skill should be used when writing blog posts, articles, or long-form content in the writer's distinctive writing s…
+   235→
+   236→### `content-strategy` v0.1.0
+   237→
+   238→- **Chemin** : `skills/content-strategy/SKILL.md`
+   239→- **Date** : 2026-03-10
+   240→- **AKA** : —
+   241→- **Taille** : 9.1 KB (181 lignes)
+   242→
+   243→**Description** :
+   244→
+   245→> Build and execute a content marketing strategy for a solopreneur business. Use when planning what content to create, de…
+   246→
+   247→### `contentanalysis` v—
+   248→
+   249→- **Chemin** : `skills/contentanalysis/SKILL.md`
+   250→- **Date** : 2026-03-13
+   251→- **AKA** : —
+   252→- **Taille** : 564 B (14 lignes)
+   253→
+   254→**Description** :
+   255→
+   256→> Content extraction and analysis — wisdom extraction from videos, podcasts, articles, and YouTube. USE WHEN extract wisd…
+   257→
+   258→### `marketing-mode` v1.0.0
+   259→
+   260→- **Chemin** : `skills/marketing-mode/SKILL.md`
+   261→- **Date** : 1979-12-31
+   262→- **AKA** : —
+   263→- **Taille** : 17.7 KB (693 lignes)
+   264→
+   265→**Description** :
+   266→
+   267→> Marketing Mode combines 23 comprehensive marketing skills covering strategy, psychology, content, SEO, conversion optim…
+   268→
+   269→### `seo-content-writer` v2.0.0
+   270→
+   271→- **Chemin** : `skills/seo-content-writer/SKILL.md`
+   272→- **Date** : 2026-03-10
+   273→- **AKA** : —
+   274→- **Taille** : 23.4 KB (661 lignes)
+   275→
+   276→**Description** :
+   277→
+   278→> Use when the user asks to "write SEO content", "create a blog post", "write an article", "content writing", "draft opti…
+   279→
+   280→### `storyboard-manager` v—
+   281→
+   282→- **Chemin** : `skills/storyboard-manager/SKILL.md`
+   283→- **Date** : 2026-03-13
+   284→- **AKA** : —
+   285→- **Taille** : 18.1 KB (532 lignes)
+   286→
+   287→**Description** :
+   288→
+   289→> Assist writers with story planning, character development, plot structuring, chapter writing, timeline tracking, and co…
+   290→
+   291→### `cheat-sheet` v—
+   292→
+   293→- **Chemin** : `skills/cheat-sheet/SKILL.md`
+   294→- **Date** : 2026-05-26
+   295→- **AKA** : —
+   296→- **Taille** : 5.9 KB (210 lignes)
+   297→
+   298→**Description** :
+   299→
+   300→> 将 PDF/Word/Markdown 学习资料转化为精炼的知识浓缩卡文档。支持三种风格（知识点速查卡/思维导图式/Q&A式），输出双栏小字 PDF。当用户说"生成知识浓缩卡"、"生成 Cheatsheet"、"帮我做个速查表"、"把这个…
+   301→
+   302→### `docx` v1.0
+   303→
+   304→- **Chemin** : `skills/docx/SKILL.md`
+   305→- **Date** : 2026-04-13
+   306→- **AKA** : —
+   307→- **Taille** : 11.7 KB (201 lignes)
+   308→
+   309→**Description** :
+   310→
+   311→> Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservat…
+   312→
+   313→### `pdf` v1.0
+   314→
+   315→- **Chemin** : `skills/pdf/SKILL.md`
+   316→- **Date** : 2026-06-02
+   317→- **AKA** : —
+   318→- **Taille** : 56.7 KB (879 lignes)
+   319→
+   320→**Description** :
+   321→
+   322→> Professional PDF toolkit with four production lines:(1) Report - structured documents via ReportLab (reports, proposals…
+   323→
+   324→### `pptx` v1.0
+   325→
+   326→- **Chemin** : `skills/pptx/SKILL.md`
+   327→- **Date** : 2026-06-15
+   328→- **AKA** : —
+   329→- **Taille** : 37.8 KB (512 lignes)
+   330→
+   331→**Description** :
+   332→
+   333→> Presentation creation, editing, and analysis for .pptx files: (1) Creating new presentations, (2) Modifying or editing …
+   334→
+   335→### `xlsx` v1.0
+   336→
+   337→- **Chemin** : `skills/xlsx/SKILL.md`
+   338→- **Date** : 2026-04-10
+   339→- **AKA** : —
+   340→- **Taille** : 10.2 KB (230 lignes)
+   341→
+   342→**Description** :
+   343→
+   344→> Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to:…
+   345→
+   346→### `coding-agent` v1.0.4
+   347→
+   348→- **Chemin** : `skills/coding-agent/SKILL.md`
+   349→- **Date** : 2026-03-18
+   350→- **AKA** : —
+   351→- **Taille** : 3.1 KB (120 lignes)
+   352→
+   353→**Description** :
+   354→
+   355→> Coding workflow with planning, implementation, verification, and testing for clean software development.
+   356→
+   357→### `fullstack-dev` v—
+   358→
+   359→- **Chemin** : `skills/fullstack-dev/SKILL.md`
+   360→- **Date** : 2026-06-18
+   361→- **AKA** : —
+   362→- **Taille** : 11.5 KB (238 lignes)
+   363→
+   364→**Description** :
+   365→
+   366→> Fullstack web development with Next.js 16, TypeScript, Tailwind CSS 4, shadcn/ui, Prisma ORM. Use when: building web ap…
+   367→
+   368→### `version-management` v—
+   369→
+   370→- **Chemin** : `skills/version-management/SKILL.md`
+   371→- **Date** : 2026-06-10
+   372→- **AKA** : —
+   373→- **Taille** : 29.4 KB (575 lignes)
+   374→
+   375→**Description** :
+   376→
+   377→> 独立通用 Skill：管理前端项目全生命周期。只要任务**可能**写出 .html/.jsx/.tsx/.vue 入口文件，就必须在写出第一个文件**之前**读取并遵循本 Skill（用于确定落盘路径与项目目录），而不是产出之后才补救；即…
+   378→
+   379→### `ai-news-collectors` v1.0.0
+   380→
+   381→- **Chemin** : `skills/ai-news-collectors/SKILL.md`
+   382→- **Date** : 1979-12-31
+   383→- **AKA** : —
+   384→- **Taille** : 5.2 KB (157 lignes)
+   385→
+   386→**Description** :
+   387→
+   388→> AI 新闻聚合与热度排序工具。当用户询问 AI 领域最新动态时触发，如："今天有什么 AI 新闻？""总结一下这周的 AI 动态""最近有什么火的 AI 产品？""AI 圈最近在讨论什么？"。覆盖：新产品发布、研究论文、行业动态、融资新闻…
+   389→
+   390→### `aminer-academic-search` v—
+   391→
+   392→- **Chemin** : `skills/aminer-academic-search/SKILL.md`
+   393→- **Date** : 2026-04-22
+   394→- **AKA** : —
+   395→- **Taille** : 5.3 KB (157 lignes)
+   396→
+   397→**Description** :
+   398→
+   399→> >
+   400→
+   401→### `aminer-daily-paper` v—
+   402→
+   403→- **Chemin** : `skills/aminer-daily-paper/SKILL.md`
+   404→- **Date** : 2026-04-21
+   405→- **AKA** : —
+   406→- **Taille** : 2.7 KB (75 lignes)
+   407→
+   408→**Description** :
+   409→
+   410→> Get personalized academic paper recommendations. Activate whenever the user asks for paper recommendations — explicit c…
+   411→
+   412→### `aminer-free-academic` v1.1.1
+   413→
+   414→- **Chemin** : `skills/aminer-free-academic/SKILL.md`
+   415→- **Date** : 2026-04-22
+   416→- **AKA** : —
+   417→- **Taille** : 10.3 KB (363 lignes)
+   418→
+   419→**Description** :
+   420→
+   421→> >
+   422→
+   423→### `finance` v—
+   424→
+   425→- **Chemin** : `skills/finance/SKILL.md`
+   426→- **Date** : 2026-02-03
+   427→- **AKA** : —
+   428→- **Taille** : 2.4 KB (53 lignes)
+   429→
+   430→**Description** :
+   431→
+   432→> Comprehensive Finance API integration skill for real-time and historical financial data analysis, market research, and …
+   433→
+   434→### `market-research-reports` v—
+   435→
+   436→- **Chemin** : `skills/market-research-reports/SKILL.md`
+   437→- **Date** : 2026-03-13
+   438→- **AKA** : —
+   439→- **Taille** : 28.0 KB (901 lignes)
+   440→
+   441→**Description** :
+   442→
+   443→> Generate comprehensive market research reports (50+ pages) in the style of top consulting firms (McKinsey, BCG, Gartner…
+   444→
+   445→### `stock-analysis-skill` v—
+   446→
+   447→- **Chemin** : `skills/stock-analysis-skill/SKILL.md`
+   448→- **Date** : 2026-03-20
+   449→- **AKA** : —
+   450→- **Taille** : 5.4 KB (156 lignes)
+   451→
+   452→**Description** :
+   453→
+   454→> Comprehensive stock market analysis skill covering A-share (China), Hong Kong, and US equities. Priority use cases: sto…
+   455→
+   456→### `ASR` v—
+   457→
+   458→- **Chemin** : `skills/ASR/SKILL.md`
+   459→- **Date** : 2025-12-21
+   460→- **AKA** : —
+   461→- **Taille** : 15.1 KB (580 lignes)
+   462→
+   463→**Description** :
+   464→
+   465→> Implement speech-to-text (ASR/automatic speech recognition) capabilities using the z-ai-web-dev-sdk. Use this skill whe…
+   466→
+   467→### `image-edit` v—
+   468→
+   469→- **Chemin** : `skills/image-edit/SKILL.md`
+   470→- **Date** : 2026-01-26
+   471→- **AKA** : —
+   472→- **Taille** : 24.2 KB (896 lignes)
+   473→
+   474→**Description** :
+   475→
+   476→> Implement AI image editing and modification capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs…
+   477→
+   478→### `image-generation` v—
+   479→
+   480→- **Chemin** : `skills/image-generation/SKILL.md`
+   481→- **Date** : 2025-12-21
+   482→- **AKA** : —
+   483→- **Taille** : 14.8 KB (583 lignes)
+   484→
+   485→**Description** :
+   486→
+   487→> Implement AI image generation capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to create ima…
+   488→
+   489→### `image-search` v1.0.0
+   490→
+   491→- **Chemin** : `skills/image-search/SKILL.md`
+   492→- **Date** : 2026-05-16
+   493→- **AKA** : —
+   494→- **Taille** : 6.6 KB (163 lignes)
+   495→
+   496→**Description** :
+   497→
+   498→> |
+   499→
+   500→### `image-understand` v—
+   501→
+   502→- **Chemin** : `skills/image-understand/SKILL.md`
+   503→- **Date** : 2026-01-23
+   504→- **AKA** : —
+   505→- **Taille** : 21.9 KB (855 lignes)
+   506→
+   507→**Description** :
+   508→
+   509→> Implement specialized image understanding capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs t…
+   510→
+   511→### `LLM` v—
+   512→
+   513→- **Chemin** : `skills/LLM/SKILL.md`
+   514→- **Date** : 2025-12-21
+   515→- **AKA** : —
+   516→- **Taille** : 21.4 KB (856 lignes)
+   517→
+   518→**Description** :
+   519→
+   520→> Implement large language model (LLM) chat completions using the z-ai-web-dev-sdk. Use this skill when the user needs to…
+   521→
+   522→### `pdf-llm` v—
+   523→
+   524→- **Chemin** : `skills/pdf-llm/SKILL.md`
+   525→- **Date** : 2026-06-21
+   526→- **AKA** : —
+   527→- **Taille** : 18.1 KB (423 lignes)
+   528→
+   529→**Description** :
+   530→
+   531→> >
+   532→
+   533→### `podcast-generate` v—
+   534→
+   535→- **Chemin** : `skills/podcast-generate/SKILL.md`
+   536→- **Date** : 2026-02-11
+   537→- **AKA** : —
+   538→- **Taille** : 5.4 KB (198 lignes)
+   539→
+   540→**Description** :
+   541→
+   542→> Generate podcast episodes from user-provided content or by searching the web for specified topics. If user uploads a te…
+   543→
+   544→### `TTS` v—
+   545→
+   546→- **Chemin** : `skills/TTS/SKILL.md`
+   547→- **Date** : 2025-12-22
+   548→- **AKA** : —
+   549→- **Taille** : 19.6 KB (735 lignes)
+   550→
+   551→**Description** :
+   552→
+   553→> Implement text-to-speech (TTS) capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to convert t…
+   554→
+   555→### `video-generation` v—
+   556→
+   557→- **Chemin** : `skills/video-generation/SKILL.md`
+   558→- **Date** : 2026-01-04
+   559→- **AKA** : —
+   560→- **Taille** : 29.1 KB (1082 lignes)
+   561→
+   562→**Description** :
+   563→
+   564→> Implement AI-powered video generation capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to ge…
+   565→
+   566→### `video-understand` v—
+   567→
+   568→- **Chemin** : `skills/video-understand/SKILL.md`
+   569→- **Date** : 2026-01-23
+   570→- **AKA** : —
+   571→- **Taille** : 24.3 KB (916 lignes)
+   572→
+   573→**Description** :
+   574→
+   575→> Implement specialized video understanding capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs t…
+   576→
+   577→### `VLM` v—
+   578→
+   579→- **Chemin** : `skills/VLM/SKILL.md`
+   580→- **Date** : 2025-12-19
+   581→- **AKA** : —
+   582→- **Taille** : 14.0 KB (588 lignes)
+   583→
+   584→**Description** :
+   585→
+   586→> Implement vision-based AI chat capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to analyze i…
+   587→
+   588→### `anti-pua` v—
+   589→
+   590→- **Chemin** : `skills/anti-pua/SKILL.md`
+   591→- **Date** : 2026-04-13
+   592→- **AKA** : —
+   593→- **Taille** : 9.3 KB (245 lignes)
+   594→
+   595→**Description** :
+   596→
+   597→> 识别和分析PUA（Pickup Artist）及情感操纵行为的专业心理分析工具。具备人格分析、心理侧写、情感分析能力，能够识别情感操纵、煤气灯操纵、虐待等有毒关系模式，评估人格特质（如黑暗三人格、脆弱型自恋等），预测对方行为并给出具体的相…
+   598→
+   599→### `dream-interpreter` v—
+   600→
+   601→- **Chemin** : `skills/dream-interpreter/SKILL.md`
+   602→- **Date** : 2026-03-18
+   603→- **AKA** : —
+   604→- **Taille** : 2.9 KB (88 lignes)
+   605→
+   606→**Description** :
+   607→
+   608→> AI 解梦大师。用户描述梦境，智能追问关键细节后，从三个视角（周公解梦/心理分析/赛博神棍）生成解读，输出结构化 JSON 供前端渲染"梦境解析卡"。
+   609→
+   610→### `get-fortune-analysis` v—
+   611→
+   612→- **Chemin** : `skills/get-fortune-analysis/SKILL.md`
+   613→- **Date** : 2026-06-21
+   614→- **AKA** : —
+   615→- **Taille** : 16.6 KB (370 lignes)
+   616→
+   617→**Description** :
+   618→
+   619→> Fortune report / 命理分析 / 八字解析生成器 — 输入生辰即刻产出流年金象风格视觉运势报告，职场·财运·情感多维度深度解读。支持中英文触发：命理分析、运势报告、fortune report、bazi chart、四柱推命…
+   620→
+   621→### `gift-evaluator` v—
+   622→
+   623→- **Chemin** : `skills/gift-evaluator/SKILL.md`
+   624→- **Date** : 2026-02-13
+   625→- **AKA** : —
+   626→- **Taille** : 4.7 KB (83 lignes)
+   627→
+   628→**Description** :
+   629→
+   630→> The PRIMARY tool for Spring Festival gift analysis and social interaction generation. Use this skill when users upload …
+   631→
+   632→### `mindfulness-meditation` v1.0.0
+   633→
+   634→- **Chemin** : `skills/mindfulness-meditation/SKILL.md`
+   635→- **Date** : 1979-12-31
+   636→- **AKA** : —
+   637→- **Taille** : 3.0 KB (65 lignes)
+   638→
+   639→**Description** :
+   640→
+   641→> Build a meditation practice with guided sessions, streaks, and mindfulness reminders
+   642→
+   643→### `correct-work` v1.0.0
+   644→
+   645→- **Chemin** : `skills/correct-work/SKILL.md`
+   646→- **Date** : 2026-06-21
+   647→- **AKA** : verify-work
+   648→- **Taille** : 9.0 KB (225 lignes)
+   649→
+   650→**Description** :
+   651→
+   652→> >
+   653→
+   654→### `skill-creator` v—
+   655→
+   656→- **Chemin** : `skills/skill-creator/SKILL.md`
+   657→- **Date** : 2026-03-14
+   658→- **AKA** : —
+   659→- **Taille** : 32.3 KB (485 lignes)
+   660→
+   661→**Description** :
+   662→
+   663→> Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a s…
+   664→
+   665→### `skill-finder-cn` v1.0.0
+   666→
+   667→- **Chemin** : `skills/skill-finder-cn/SKILL.md`
+   668→- **Date** : 1979-12-31
+   669→- **AKA** : —
+   670→- **Taille** : 1.2 KB (66 lignes)
+   671→
+   672→**Description** :
+   673→
+   674→> Skill 查找器 | Skill Finder. 帮助发现和安装 ClawHub Skills | Discover and install ClawHub Skills. 回答'有什么技能可以X'、'找一个技能' | Answers …
+   675→
+   676→### `skills-inventory` v—
+   677→
+   678→- **Chemin** : `skills/skills-inventory/SKILL.md`
+   679→- **Date** : 2026-06-21
+   680→- **AKA** : —
+   681→- **Taille** : 5.1 KB (135 lignes)
+   682→
+   683→**Description** :
+   684→
+   685→> >
+   686→
+   687→### `task-review` v—
+   688→
+   689→- **Chemin** : `skills/task-review/SKILL.md`
+   690→- **Date** : 2026-05-21
+   691→- **AKA** : —
+   692→- **Taille** : 1.9 KB (49 lignes)
+   693→
+   694→**Description** :
+   695→
+   696→> 当用户指令为高复杂度任务时触发，用于将刚完成的任务路径保存为可复用技能，生成相关的SKILL.md文档。
+   697→
+   698→### `writing-plans` v0.1.0
+   699→
+   700→- **Chemin** : `skills/writing-plans/SKILL.md`
+   701→- **Date** : 2026-03-10
+   702→- **AKA** : —
+   703→- **Taille** : 3.2 KB (116 lignes)
+   704→
+   705→**Description** :
+   706→
+   707→> Use when you have a spec or requirements for a multi-step task, before touching code
+   708→
+   709→### `charts` v1.0
+   710→
+   711→- **Chemin** : `skills/charts/SKILL.md`
+   712→- **Date** : 2026-04-08
+   713→- **AKA** : —
+   714→- **Taille** : 22.1 KB (427 lignes)
+   715→
+   716→**Description** :
+   717→
+   718→> >
+   719→
+   720→### `design` v—
+   721→
+   722→- **Chemin** : `skills/design/SKILL.md`
+   723→- **Date** : 2026-06-08
+   724→- **AKA** : —
+   725→- **Taille** : 40.9 KB (593 lignes)
+   726→
+   727→**Description** :
+   728→
+   729→> Route design-related HTML artifact tasks to the right artifact skill, reference, design system generation, or export sk…
+   730→
+   731→### `interview-designer` v1.0.0
+   732→
+   733→- **Chemin** : `skills/interview-designer/SKILL.md`
+   734→- **Date** : 2026-03-10
+   735→- **AKA** : —
+   736→- **Taille** : 3.7 KB (53 lignes)
+   737→
+   738→**Description** :
+   739→
+   740→> Analyze resumes and design interview strategies using evidence-based methodology. Transforms interview prep from "read …
+   741→
+   742→### `ui-ux-pro-max` v0.1.0
+   743→
+   744→- **Chemin** : `skills/ui-ux-pro-max/SKILL.md`
+   745→- **Date** : 2026-03-10
+   746→- **AKA** : —
+   747→- **Taille** : 2.6 KB (43 lignes)
+   748→
+   749→**Description** :
+   750→
+   751→> UI/UX design intelligence and implementation guidance for building polished interfaces. Use when the user asks for UI d…
+   752→
+   753→### `visual-design-foundations` v—
+   754→
+   755→- **Chemin** : `skills/visual-design-foundations/SKILL.md`
+   756→- **Date** : 2026-03-13
+   757→- **AKA** : —
+   758→- **Taille** : 7.0 KB (318 lignes)
+   759→
+   760→**Description** :
+   761→
+   762→> Apply typography, color theory, spacing systems, and iconography principles to create cohesive visual designs. Use when…
+   763→
+   764→### `agent-browser` v—
+   765→
+   766→- **Chemin** : `skills/agent-browser/SKILL.md`
+   767→- **Date** : 1979-12-31
+   768→- **AKA** : —
+   769→- **Taille** : 10.0 KB (328 lignes)
+   770→
+   771→**Description** :
+   772→
+   773→> A fast Rust-based headless browser automation CLI with Node.js fallback that enables AI agents to navigate, click, type…
+   774→
+   775→### `multi-search-engine` v2.0.1
+   776→
+   777→- **Chemin** : `skills/multi-search-engine/SKILL.md`
+   778→- **Date** : 2026-03-14
+   779→- **AKA** : —
+   780→- **Taille** : 2.5 KB (78 lignes)
+   781→
+   782→**Description** :
+   783→
+   784→> Multi search engine integration with 8 domestic (CN) search engines. Supports advanced search operators, time filters, …
+   785→
+   786→### `qingyan-research` v—
+   787→
+   788→- **Chemin** : `skills/qingyan-research/SKILL.md`
+   789→- **Date** : 2026-03-16
+   790→- **AKA** : —
+   791→- **Taille** : 11.8 KB (294 lignes)
+   792→
+   793→**Description** :
+   794→
+   795→> Deep web research and HTML report generation. When GLM needs to conduct systematic information gathering and analysis f…
+   796→
+   797→### `web-reader` v—
+   798→
+   799→- **Chemin** : `skills/web-reader/SKILL.md`
+   800→- **Date** : 2025-12-19
+   801→- **AKA** : —
+   802→- **Taille** : 27.7 KB (1140 lignes)
+   803→
+   804→**Description** :
+   805→
+   806→> Implement web page content extraction capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to sc…
+   807→
+   808→### `web-search` v—
+   809→
+   810→- **Chemin** : `skills/web-search/SKILL.md`
+   811→- **Date** : 2026-01-23
+   812→- **AKA** : —
+   813→- **Taille** : 22.0 KB (912 lignes)
+   814→
+   815→**Description** :
+   816→
+   817→> Implement web search capabilities using the z-ai-web-dev-sdk. Use this skill when the user needs to search for real-tim…
+   818→
+   819→### `web-shader-extractor` v—
+   820→
+   821→- **Chemin** : `skills/web-shader-extractor/SKILL.md`
+   822→- **Date** : 2026-03-30
+   823→- **AKA** : —
+   824→- **Taille** : 6.1 KB (145 lignes)
+   825→
+   826→**Description** :
+   827→
+   828→> |
+   829→
+   830→### `gaokao-collect-student-info` v—
+   831→
+   832→- **Chemin** : `skills/gaokao-collect-student-info/SKILL.md`
+   833→- **Date** : 2026-06-16
+   834→- **AKA** : —
+   835→- **Taille** : 5.4 KB (105 lignes)
+   836→
+   837→**Description** :
+   838→
+   839→> >-
+   840→
+   841→### `gaokao-fetch-volunteers` v—
+   842→
+   843→- **Chemin** : `skills/gaokao-fetch-volunteers/SKILL.md`
+   844→- **Date** : 2026-06-10
+   845→- **AKA** : —
+   846→- **Taille** : 3.6 KB (110 lignes)
+   847→
+   848→**Description** :
+   849→
+   850→> >-
+   851→
+   852→### `gaokao-generate-report` v—
+   853→
+   854→- **Chemin** : `skills/gaokao-generate-report/SKILL.md`
+   855→- **Date** : 2026-06-10
+   856→- **AKA** : —
+   857→- **Taille** : 2.0 KB (69 lignes)
+   858→
+   859→**Description** :
+   860→
+   861→> >-
+   862→
+   863→### `gaokao-recommend-majors` v—
+   864→
+   865→- **Chemin** : `skills/gaokao-recommend-majors/SKILL.md`
+   866→- **Date** : 2026-06-10
+   867→- **AKA** : —
+   868→- **Taille** : 2.4 KB (66 lignes)
+   869→
+   870→**Description** :
+   871→
+   872→> >-
+   873→
+   874→### `gaokao-recommend-schools` v—
+   875→
+   876→- **Chemin** : `skills/gaokao-recommend-schools/SKILL.md`
+   877→- **Date** : 2026-06-10
+   878→- **AKA** : —
+   879→- **Taille** : 2.3 KB (68 lignes)
+   880→
+   881→**Description** :
+   882→
+   883→> >-
+   884→
+   885→### `quiz-html` v0.1.0
+   886→
+   887→- **Chemin** : `skills/quiz-html/SKILL.md`
+   888→- **Date** : 2026-05-18
+   889→- **AKA** : —
+   890→- **Taille** : 7.8 KB (191 lignes)
+   891→
+   892→**Description** :
+   893→
+   894→> 把题目数组生成一个**可独立运行的网页练习页**（HTML 文件）。当用户完成 quiz-mastery 的「从资料出题」或「从文件提取题目」流程后，应主动询问是否需要"在网页里练习"，确认后调用本 skill 把题目注入模板，生成 HT…
+   895→
+   896→### `quiz-mastery` v0.2.0
+   897→
+   898→- **Chemin** : `skills/quiz-mastery/SKILL.md`
+   899→- **Date** : 2026-05-22
+   900→- **AKA** : —
+   901→- **Taille** : 9.1 KB (212 lignes)
+   902→
+   903→**Description** :
+   904→
+   905→> 出题、测验、复习、掌握度追踪工具。**用户说"复习"、"巩固"、"回顾"任一关键词时优先触发本 skill**。当用户的请求与"题目/复习"相关时触发：把学习资料/PDF/材料转成题目练习（"给这个 PDF 出几道题"）、导入题目文件做练…
+   906→
+   907→### `study-buddy` v—
+   908→
+   909→- **Chemin** : `skills/study-buddy/SKILL.md`
+   910→- **Date** : 2026-06-01
+   911→- **AKA** : —
+   912→- **Taille** : 29.4 KB (525 lignes)
+   913→
+   914→**Description** :
+   915→
+   916→> 智能督学助手，管理用户的长期学习项目工作流。当用户表达学习项目相关意图时触发：创建/制定学习计划（"我想学X"、"帮我制定计划"）、汇报学习进度（"学完了"、"今天搞定了"、"完成今日任务"）、查询计划状态（"我学到哪了"、"看下进度"）…
+   917→
+   918→---
+   919→
+   920→## Métadonnées du fichier
+   921→
+   922→- **Fichier** : généré par `skills-inventory`
+   923→- **Date de génération** : 2026-06-21 01:35
+   924→- **Nombre total de skills** : 69
+   925→- **Nombre de catégories** : 12
+   926→
